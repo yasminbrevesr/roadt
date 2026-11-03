@@ -177,6 +177,15 @@ async function checkPage(browser, vp, axeSource) {
       }
     });
     document.querySelectorAll('link[rel="icon"]').forEach((l) => internal.add(new URL(l.href).pathname));
+    // Títulos configurados para uma linha não podem quebrar nem ultrapassar a largura.
+    document.querySelectorAll('.st--single .st__title').forEach((h) => {
+      const lineHeight = parseFloat(getComputedStyle(h).lineHeight) || parseFloat(getComputedStyle(h).fontSize);
+      const rect = h.getBoundingClientRect();
+      const box = h.parentElement.getBoundingClientRect();
+      if (rect.height > lineHeight * 1.5) issues.push(`título quebrou em mais de uma linha: "${h.textContent.trim()}"`);
+      if (h.scrollWidth > h.clientWidth + 1 || rect.right > box.right + 1)
+        issues.push(`título não cabe na largura: "${h.textContent.trim()}"`);
+    });
     document.querySelectorAll('button').forEach((b) => {
       const name = (b.getAttribute('aria-label') || b.textContent || '').trim();
       if (!name) issues.push('botão sem nome acessível');

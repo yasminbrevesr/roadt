@@ -11,13 +11,33 @@ interface Props {
   lead?: string;
   align?: 'left' | 'center';
   as?: 'h1' | 'h2';
+  /**
+   * Mantém o título em uma única linha. Informe a largura do texto em "em"
+   * (largura em px ÷ tamanho da fonte em px); em telas estreitas a fonte diminui
+   * só o necessário para caber, sem quebrar a linha.
+   */
+  singleLineEm?: number;
   class?: string;
 }
 
-const { id, eyebrow, index, title, lead, align = 'left', as: Tag = 'h2', class: className } = Astro.props;
+const {
+  id,
+  eyebrow,
+  index,
+  title,
+  lead,
+  align = 'left',
+  as: Tag = 'h2',
+  singleLineEm,
+  class: className,
+} = Astro.props;
 ---
 
-<header class:list={['st', `st--${align}`, className]} data-reveal>
+<header
+  class:list={['st', `st--${align}`, { 'st--single': singleLineEm }, className]}
+  style={singleLineEm ? `--fit-em:${singleLineEm}` : undefined}
+  data-reveal
+>
   <p class="st__eyebrow">
     {index && <span class="st__index">{index}</span>}
     <span class="st__route" aria-hidden="true"></span>
@@ -78,6 +98,17 @@ const { id, eyebrow, index, title, lead, align = 'left', as: Tag = 'h2', class: 
   .st__title {
     font-size: var(--fs-h2);
     max-width: 16ch;
+  }
+
+  /* Título em uma linha: a fonte se ajusta à largura disponível (container query). */
+  .st--single {
+    container-type: inline-size;
+  }
+
+  .st--single .st__title {
+    max-width: none;
+    white-space: nowrap;
+    font-size: min(var(--fs-h2), calc(100cqi / var(--fit-em)));
   }
 
   .st--center .st__title {
