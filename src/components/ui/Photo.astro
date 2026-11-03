@@ -9,8 +9,8 @@
  * O componente ocupa 100% do elemento pai — quem usa define a proporção (aspect-ratio/altura).
  */
 import { Picture } from 'astro:assets';
-import type { ImageMetadata } from 'astro';
 import { site } from '@/config/site';
+import { findPhoto } from '@/lib/photos';
 
 type Tone = 'ink' | 'lagoon' | 'clay';
 
@@ -45,14 +45,7 @@ const {
   class: className,
 } = Astro.props;
 
-const photos = import.meta.glob<{ default: ImageMetadata }>('/src/assets/photos/*.{jpg,jpeg,png,webp,avif}', {
-  eager: true,
-});
-
-const image = Object.entries(photos).find(([path]) => {
-  const file = path.split('/').pop() ?? '';
-  return file.replace(/\.[^.]+$/, '') === name;
-})?.[1].default;
+const image = findPhoto(name);
 
 const tones: Tone[] = ['ink', 'lagoon', 'clay'];
 const autoTone = tones[[...name].reduce((acc, ch) => acc + ch.charCodeAt(0), 0) % tones.length];

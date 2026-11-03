@@ -1,6 +1,8 @@
 ---
 /**
- * Topo da página: carrossel de fotos em tela cheia com chamada principal.
+ * Topo da página: foto (ou carrossel de fotos) em tela cheia com chamada principal.
+ * - Usa só as fotos que já existem em src/assets/photos. Com uma foto, ela fica fixa;
+ *   com duas ou mais, vira carrossel. Sem nenhuma, mostra um espaço reservado.
  * - As fotos trocam sozinhas (com transição suave) e podem ser escolhidas pelos indicadores.
  * - Pausa ao passar o mouse, ao navegar por teclado dentro dele, com a aba em segundo
  *   plano e pelo botão "Pausar". Quem prefere menos movimento começa com ele pausado.
@@ -9,9 +11,12 @@
  */
 import Photo from '@/components/ui/Photo.astro';
 import CTAButton from '@/components/ui/CTAButton.astro';
-import { heroSlides, HERO_INTERVAL_MS } from '@/data/hero';
+import { heroSlides as allSlides, HERO_INTERVAL_MS } from '@/data/hero';
 import { whatsappLink } from '@/lib/links';
+import { hasPhoto } from '@/lib/photos';
 
+const available = allSlides.filter((slide) => hasPhoto(slide.photo));
+const heroSlides = available.length > 0 ? available : allSlides.slice(0, 1);
 const total = heroSlides.length;
 const pad = (n: number) => String(n).padStart(2, '0');
 const tones = ['ink', 'lagoon', 'clay'] as const;
