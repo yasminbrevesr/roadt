@@ -1,0 +1,104 @@
+---
+/**
+ * Cabeçalho padrão das seções: numeração editorial, rótulo, título e linha de apoio.
+ * O título aceita <em> para destacar uma palavra (ex.: 'Bora viver a <em>próxima</em>?').
+ */
+interface Props {
+  id: string;
+  eyebrow: string;
+  index?: string;
+  title: string;
+  lead?: string;
+  align?: 'left' | 'center';
+  as?: 'h1' | 'h2';
+  class?: string;
+}
+
+const { id, eyebrow, index, title, lead, align = 'left', as: Tag = 'h2', class: className } = Astro.props;
+---
+
+<header class:list={['st', `st--${align}`, className]} data-reveal>
+  <p class="st__eyebrow">
+    {index && <span class="st__index">{index}</span>}
+    <span class="st__route" aria-hidden="true"></span>
+    <span>{eyebrow}</span>
+  </p>
+  <Tag id={id} class="st__title" set:html={title} />
+  {lead && <p class="st__lead lead">{lead}</p>}
+  <slot />
+</header>
+
+<style>
+  .st {
+    display: grid;
+    gap: 1.1rem;
+    margin-bottom: clamp(2.25rem, 1.5rem + 3vw, 4rem);
+  }
+
+  .st--center {
+    justify-items: center;
+    text-align: center;
+  }
+
+  .st--center .st__lead {
+    margin-inline: auto;
+  }
+
+  .st__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .st__index {
+    font-family: var(--font-display);
+    font-variant-numeric: tabular-nums;
+    color: var(--c-sun-deep);
+  }
+
+  :global(.on-dark) .st__index {
+    color: var(--c-sun);
+  }
+
+  /* No verde-lagoa o laranja não atinge contraste AA em texto pequeno: usa o dourado. */
+  :global(.surface-lagoon) .st__index {
+    color: var(--c-gold);
+  }
+
+  .st__route {
+    width: 2.5rem;
+    border-top: 2px dashed currentColor;
+    opacity: 0.55;
+  }
+
+  .st__title {
+    font-size: var(--fs-h2);
+    max-width: 16ch;
+  }
+
+  .st--center .st__title {
+    max-width: 18ch;
+  }
+
+  .st__title :global(em) {
+    font-style: normal;
+    color: var(--c-sun-deep);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 12' preserveAspectRatio='none'%3E%3Cpath d='M2 8.5C40 3 80 2.5 118 5.5S180 10 198 4' fill='none' stroke='%23ff5b24' stroke-width='3.2' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 100% 0.22em;
+    padding-bottom: 0.08em;
+  }
+
+  :global(.on-dark) .st__title :global(em) {
+    color: var(--c-sun);
+  }
+
+  :global(.surface-lagoon) .st__title :global(em) {
+    color: var(--c-gold);
+  }
+</style>

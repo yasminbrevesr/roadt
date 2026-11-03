@@ -1,0 +1,121 @@
+---
+/**
+ * Accordion de perguntas frequentes com <details>/<summary> nativos:
+ * funciona sem JavaScript, por teclado (Enter/Espaço) e com leitores de tela.
+ * O atributo `name` faz com que apenas um item fique aberto por vez (navegadores atuais).
+ */
+import Icon from '@/components/ui/Icon.astro';
+import type { FaqItem } from '@/data/faq';
+
+interface Props {
+  items: FaqItem[];
+  name?: string;
+}
+
+const { items, name = 'faq' } = Astro.props;
+---
+
+<div class="faq">
+  {
+    items.map((item) => (
+      <details class="faq__item" name={name}>
+        <summary class="faq__q">
+          <span>{item.question}</span>
+          <span class="faq__icon" aria-hidden="true">
+            <Icon name="plus" size={20} />
+          </span>
+        </summary>
+        <div class="faq__a prose" set:html={item.answerHtml} />
+      </details>
+    ))
+  }
+</div>
+
+<style>
+  .faq {
+    border-top: 1px solid var(--c-line);
+  }
+
+  .faq__item {
+    border-bottom: 1px solid var(--c-line);
+    interpolate-size: allow-keywords;
+  }
+
+  .faq__q {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    min-height: 3rem;
+    padding: 1.35rem 0;
+    font-family: var(--font-display);
+    font-size: var(--fs-xl);
+    font-weight: 650;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    cursor: pointer;
+    list-style: none;
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .faq__q::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq__q:hover {
+    color: var(--c-sun-deep);
+  }
+
+  .faq__icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1.5px solid currentColor;
+    border-radius: 50%;
+    transition:
+      transform var(--dur) var(--ease-out),
+      background-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+  }
+
+  .faq__item[open] .faq__icon {
+    transform: rotate(45deg);
+    background: var(--c-ink);
+    border-color: var(--c-ink);
+    color: var(--c-paper);
+  }
+
+  .faq__a {
+    max-width: 44rem;
+    padding: 0 3.5rem 1.6rem 0;
+    color: var(--c-muted);
+    font-size: var(--fs-base);
+  }
+
+  .faq__a :global(strong) {
+    color: var(--c-ink);
+  }
+
+  /* Abertura suave onde o navegador suporta (progressivo). */
+  @media (prefers-reduced-motion: no-preference) {
+    .faq__item::details-content {
+      block-size: 0;
+      overflow: clip;
+      transition:
+        block-size var(--dur) var(--ease-out),
+        content-visibility var(--dur) allow-discrete;
+    }
+
+    .faq__item[open]::details-content {
+      block-size: auto;
+    }
+  }
+
+  @media (max-width: 40rem) {
+    .faq__a {
+      padding-right: 0;
+    }
+  }
+</style>

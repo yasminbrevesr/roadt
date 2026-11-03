@@ -1,0 +1,163 @@
+---
+/**
+ * Avaliações de clientes.
+ * - Com avaliações reais em src/data/reviews.ts → exibe nota, total e depoimentos.
+ * - Sem avaliações → a seção não é renderizada (ou mostra aviso de pendência,
+ *   se `showPendingMarkers` estiver ligado). Nunca exibe conteúdo fictício.
+ */
+import SectionTitle from '@/components/ui/SectionTitle.astro';
+import TestimonialCard from '@/components/cards/TestimonialCard.astro';
+import CTAButton from '@/components/ui/CTAButton.astro';
+import PendingNote from '@/components/ui/PendingNote.astro';
+import Icon from '@/components/ui/Icon.astro';
+import { reviews } from '@/data/reviews';
+
+interface Props {
+  index?: string;
+}
+
+const { index } = Astro.props;
+const hasReviews = reviews.items.length > 0;
+const rating = reviews.averageRating;
+---
+
+<section id="avaliacoes" class="section reviews" aria-labelledby="avaliacoes-title">
+  <div class="container">
+    <div class="reviews__head">
+      <SectionTitle
+        id="avaliacoes-title"
+        index={index}
+        eyebrow="Avaliações"
+        title="O que dizem <em>nossos viajantes</em>"
+      />
+
+      {
+        hasReviews && rating !== null && (
+          <div class="reviews__summary" data-reveal>
+            <p class="reviews__score">
+              <span class="reviews__number">{rating.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
+              <span class="reviews__stars" role="img" aria-label={`Nota média ${rating} de 5`}>
+                {Array.from({ length: 5 }, (_, i) => (
+                  <Icon name="star" size={18} class={i < Math.round(rating) ? 'is-on' : 'is-off'} />
+                ))}
+              </span>
+            </p>
+            {reviews.totalReviews !== null && (
+              <p class="reviews__count">
+                <Icon name="google" size={16} />
+                {reviews.totalReviews} avaliações no {reviews.sourceName}
+              </p>
+            )}
+          </div>
+        )
+      }
+    </div>
+
+    {
+      hasReviews ? (
+        <>
+          <ul class="reviews__grid">
+            {reviews.items.map((review, i) => (
+              <li data-reveal style={`--reveal-delay:${(i % 3) * 80}ms`}>
+                <TestimonialCard review={review} />
+              </li>
+            ))}
+          </ul>
+          {reviews.sourceUrl && (
+            <div class="reviews__more">
+              <CTAButton href={reviews.sourceUrl} variant="outline" icon="google" trailingIcon="arrow-up-right" external>
+                Ver todas as avaliações
+              </CTAButton>
+            </div>
+          )}
+        </>
+      ) : (
+        <PendingNote title="Avaliações pendentes">
+          Esta seção só aparece no site publicado quando houver avaliações reais. Preencha{' '}
+          <code>src/data/reviews.ts</code> com nota média, total e depoimentos copiados do Perfil da Empresa no Google,
+          incluindo o link público das avaliações.
+        </PendingNote>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .reviews__head {
+    display: grid;
+    gap: 0 2rem;
+  }
+
+  @media (min-width: 56rem) {
+    .reviews__head {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+    }
+
+    .reviews__summary {
+      margin-bottom: clamp(2.25rem, 1.5rem + 3vw, 4rem);
+      text-align: right;
+    }
+  }
+
+  .reviews__summary {
+    display: grid;
+    gap: 0.35rem;
+    margin-bottom: 2rem;
+  }
+
+  .reviews__score {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .reviews__number {
+    font-family: var(--font-display);
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+
+  .reviews__stars {
+    display: flex;
+    color: var(--c-sun);
+  }
+
+  .reviews__stars :global(.is-on) {
+    fill: currentColor;
+  }
+
+  .reviews__count {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: var(--fs-sm);
+    color: var(--c-muted);
+  }
+
+  .reviews__grid {
+    display: grid;
+    gap: 1rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 45rem) {
+    .reviews__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .reviews__grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.25rem;
+    }
+  }
+
+  .reviews__more {
+    margin-top: 2rem;
+  }
+</style>

@@ -1,0 +1,234 @@
+---
+import SectionTitle from '@/components/ui/SectionTitle.astro';
+import Photo from '@/components/ui/Photo.astro';
+import CTAButton from '@/components/ui/CTAButton.astro';
+import { site, storePaths } from '@/config/site';
+import { destinations } from '@/data/destinations';
+import { storeLink } from '@/lib/links';
+
+interface Props {
+  index?: string;
+}
+
+const { index } = Astro.props;
+const stampText = `Viagens em grupo • Desde ${site.since.year} • ${site.homeBase} • `;
+---
+
+<section id="sobre" class="section about" aria-labelledby="sobre-title">
+  <div class="container about__grid">
+    <div class="about__text">
+      <SectionTitle
+        id="sobre-title"
+        index={index}
+        eyebrow="Sobre a RoadTrip021"
+        title="Mais do que viagens: uma <em>comunidade</em> que vive o mundo junto."
+      />
+
+      <blockquote class="about__quote" data-reveal>
+        <p>{site.mission}</p>
+      </blockquote>
+
+      <p class="about__p" data-reveal>
+        Nossa história começou em {site.since.label}, com a vontade de mudar o jeito de viajar: tirar as pessoas da
+        rotina e conectar quem quer conhecer o mundo — de preferência, junto.
+      </p>
+
+      <p class="about__slogan" data-reveal>{site.tagline}</p>
+
+      <dl class="about__stats" data-reveal>
+        <div>
+          <dt>início da nossa história</dt>
+          <dd>{site.since.year}</dd>
+        </div>
+        <div>
+          <dt>destinos para explorar</dt>
+          <dd>{destinations.length}</dd>
+        </div>
+        <div>
+          <dt>cidades de saída</dt>
+          <dd>RJ · SP</dd>
+        </div>
+      </dl>
+
+      <div data-reveal>
+        <CTAButton href={storeLink(storePaths.about)} variant="outline">Conheça nossa história</CTAButton>
+      </div>
+    </div>
+
+    <div class="about__collage" data-reveal>
+      {/* PENDENTE: 3 fotos originais de grupos em viagem → src/assets/photos/sobre-1.jpg, sobre-2.jpg, sobre-3.jpg */}
+      <div class="about__photo about__photo--a">
+        <Photo name="sobre-1" alt="Grupo de viajantes da RoadTrip021" sizes="(min-width: 64rem) 420px, 66vw" widths={[400, 640, 900]} tone="lagoon" />
+      </div>
+      <div class="about__photo about__photo--b">
+        <Photo name="sobre-2" alt="Viajantes da RoadTrip021 em uma trilha" sizes="(min-width: 64rem) 300px, 45vw" widths={[320, 480, 640]} tone="clay" />
+      </div>
+      <div class="about__photo about__photo--c">
+        <Photo name="sobre-3" alt="Momento de confraternização em uma viagem da RoadTrip021" sizes="(min-width: 64rem) 260px, 40vw" widths={[320, 480, 640]} tone="ink" />
+      </div>
+
+      <svg class="about__stamp" viewBox="0 0 200 200" aria-hidden="true">
+        <defs>
+          <path id="stamp-circle" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0"></path>
+        </defs>
+        <circle cx="100" cy="100" r="98" fill="currentColor"></circle>
+        <text>
+          <textPath href="#stamp-circle" textLength="488">{stampText.toUpperCase()}</textPath>
+        </text>
+        <path d="M100 74l6.5 19.5L126 100l-19.5 6.5L100 126l-6.5-19.5L74 100l19.5-6.5z" class="about__stamp-star"></path>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<style>
+  .about__grid {
+    display: grid;
+    gap: clamp(3rem, 2rem + 4vw, 5rem);
+  }
+
+  @media (min-width: 64rem) {
+    .about__grid {
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+      align-items: center;
+    }
+  }
+
+  .about__text {
+    display: grid;
+    gap: 1.5rem;
+    justify-items: start;
+  }
+
+  .about__text :global(.st) {
+    margin-bottom: 0.5rem;
+  }
+
+  .about__quote {
+    padding-left: 1.25rem;
+    border-left: 3px solid var(--c-sun);
+    font-family: var(--font-display);
+    font-size: var(--fs-xl);
+    font-weight: 500;
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+  }
+
+  .about__p {
+    max-width: 36rem;
+    color: var(--c-muted);
+    font-size: var(--fs-lg);
+  }
+
+  .about__slogan {
+    font-family: var(--font-display);
+    font-size: var(--fs-h3);
+    font-weight: 750;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: var(--c-sun-deep);
+  }
+
+  .about__stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    width: 100%;
+    padding-block: 1.25rem;
+    border-block: 1px solid var(--c-line);
+  }
+
+  .about__stats div {
+    display: flex;
+    flex-direction: column-reverse;
+    /* em column-reverse, flex-end alinha os números no topo */
+    justify-content: flex-end;
+    gap: 0.25rem;
+  }
+
+  .about__stats dt {
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--c-muted);
+  }
+
+  .about__stats dd {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.75rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+
+  /* Colagem de fotos */
+  .about__collage {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-rows: repeat(12, minmax(0, 1fr));
+    aspect-ratio: 1 / 1.08;
+    width: 100%;
+  }
+
+  .about__photo {
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+  }
+
+  .about__photo--a {
+    grid-column: 1 / 9;
+    grid-row: 1 / 9;
+  }
+
+  .about__photo--b {
+    grid-column: 8 / 13;
+    grid-row: 3 / 8;
+    border: 6px solid var(--c-paper);
+    border-radius: calc(var(--radius-lg) + 6px);
+    z-index: 1;
+  }
+
+  .about__photo--c {
+    grid-column: 3 / 8;
+    grid-row: 8 / 13;
+    border: 6px solid var(--c-paper);
+    border-radius: calc(var(--radius-lg) + 6px);
+    z-index: 1;
+  }
+
+  .about__stamp {
+    grid-column: 9 / 13;
+    grid-row: 9 / 13;
+    align-self: center;
+    justify-self: center;
+    width: 100%;
+    max-width: 9.5rem;
+    color: var(--c-ink);
+    z-index: 2;
+  }
+
+  .about__stamp text {
+    fill: var(--c-paper);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+
+  .about__stamp-star {
+    fill: var(--c-sun);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .about__stamp {
+      animation: stamp-spin 28s linear infinite;
+    }
+
+    @keyframes stamp-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  }
+</style>

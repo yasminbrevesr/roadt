@@ -1,0 +1,151 @@
+---
+import SectionTitle from '@/components/ui/SectionTitle.astro';
+import Icon from '@/components/ui/Icon.astro';
+import { highlights } from '@/data/highlights';
+
+interface Props {
+  index?: string;
+}
+
+const { index } = Astro.props;
+---
+
+<section id="por-que" class="section why surface-lagoon on-dark" aria-labelledby="porque-title">
+  <div class="container">
+    <SectionTitle
+      id="porque-title"
+      index={index}
+      eyebrow="Diferenciais"
+      title="Por que viajar com a <em>RoadTrip</em>?"
+      lead="Tudo gira em torno de uma ideia simples: viajar é melhor junto."
+    />
+
+    <ol class="why__grid">
+      {
+        highlights.map((item, i) => (
+          <li class="why__item" data-reveal style={`--reveal-delay:${(i % 3) * 80}ms`}>
+            <div class="why__top">
+              <span class="why__icon">
+                <Icon name={item.icon} size={22} />
+              </span>
+              <span class="why__num" aria-hidden="true">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+            </div>
+            <h3 class="why__title">{item.title}</h3>
+            <p class="why__text">{item.text}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .why__grid {
+    display: grid;
+    gap: 1rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 40rem) {
+    .why__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .why__grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.25rem;
+    }
+  }
+
+  .why__item {
+    display: grid;
+    align-content: start;
+    gap: 0.75rem;
+    padding: 1.6rem;
+    border: 1px solid var(--c-line-dark);
+    border-radius: var(--radius-lg);
+    background: rgb(15 31 26 / 0.18);
+    transition:
+      background-color var(--dur) var(--ease-out),
+      border-color var(--dur) var(--ease-out);
+  }
+
+  @media (hover: hover) {
+    .why__item:hover {
+      background: rgb(15 31 26 / 0.32);
+      border-color: rgb(246 241 231 / 0.32);
+    }
+  }
+
+  .why__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+
+  .why__icon {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: var(--c-sun);
+    color: var(--c-ink);
+  }
+
+  .why__num {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--c-muted-dark);
+  }
+
+  .why__title {
+    font-size: var(--fs-xl);
+    line-height: 1.1;
+  }
+
+  .why__text {
+    color: rgb(246 241 231 / 0.82);
+  }
+
+  /* Celular: ícone ao lado do texto, cartões mais baixos */
+  @media (max-width: 39.99rem) {
+    .why__item {
+      grid-template-columns: auto minmax(0, 1fr);
+      column-gap: 1rem;
+      row-gap: 0.35rem;
+      padding: 1.25rem;
+    }
+
+    .why__top {
+      grid-row: 1 / span 2;
+      align-self: start;
+      margin: 0;
+    }
+
+    .why__num {
+      display: none;
+    }
+
+    .why__title,
+    .why__text {
+      grid-column: 2;
+    }
+
+    .why__title {
+      font-size: 1.25rem;
+      align-self: center;
+      min-height: 3rem;
+      display: flex;
+      align-items: center;
+    }
+  }
+</style>

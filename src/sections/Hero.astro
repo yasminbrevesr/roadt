@@ -1,0 +1,272 @@
+---
+import Photo from '@/components/ui/Photo.astro';
+import CTAButton from '@/components/ui/CTAButton.astro';
+import Icon from '@/components/ui/Icon.astro';
+import type { Departure } from '@/data/departures';
+import { site } from '@/config/site';
+import { formatRange } from '@/lib/dates';
+import { storeLink, whatsappLink } from '@/lib/links';
+
+interface Props {
+  nextDeparture?: Departure;
+}
+
+const { nextDeparture } = Astro.props;
+---
+
+<section class="hero on-dark" aria-labelledby="hero-title">
+  <div class="hero__media">
+    {/* PENDENTE: foto original de grupo em viagem, horizontal, mín. 2400px de largura → src/assets/photos/hero.jpg */}
+    <Photo
+      name="hero"
+      alt="Grupo da RoadTrip021 reunido durante uma viagem"
+      priority
+      sizes="100vw"
+      widths={[640, 960, 1280, 1600, 2000, 2560]}
+      tone="ink"
+      pending="compact-mobile"
+    />
+  </div>
+  <div class="hero__shade" aria-hidden="true"></div>
+
+  <svg class="hero__route" viewBox="0 0 520 360" fill="none" aria-hidden="true">
+    <path
+      class="hero__route-path"
+      d="M8 340C90 300 70 230 150 210s150 40 190-30 10-120 90-140"
+      stroke="currentColor"
+      stroke-width="2.5"
+      stroke-linecap="round"
+      stroke-dasharray="2 12"></path>
+    <circle cx="430" cy="40" r="7" fill="currentColor"></circle>
+    <circle cx="430" cy="40" r="16" stroke="currentColor" stroke-width="2" opacity=".5"></circle>
+  </svg>
+
+  <div class="hero__content container">
+    <p class="hero__kicker">
+      <span class="hero__dot" aria-hidden="true"></span>
+      Viagens e experiências em grupo · desde {site.since.year}
+    </p>
+    <h1 id="hero-title" class="hero__title">Sua próxima <em>história</em> começa aqui.</h1>
+    <p class="hero__lead">
+      Conheça lugares incríveis, faça novas amizades e viva experiências que vão muito além de uma viagem.
+    </p>
+    <div class="hero__actions">
+      <CTAButton href="#viagens" size="lg">Explorar viagens</CTAButton>
+      <CTAButton
+        href={whatsappLink()}
+        variant="outline-light"
+        size="lg"
+        icon="whatsapp"
+        trailingIcon={null}
+        external
+      >
+        Falar no WhatsApp
+      </CTAButton>
+    </div>
+
+    {
+      nextDeparture && (
+        <a class="hero__next" href={storeLink(nextDeparture.url)} data-start={nextDeparture.start}>
+          <span class="hero__next-label">Próxima saída</span>
+          <span class="hero__next-title">{nextDeparture.title}</span>
+          <span class="hero__next-date">
+            <Icon name="calendar" size={16} />
+            {formatRange(nextDeparture.start, nextDeparture.end)}
+          </span>
+          <span class="hero__next-arrow" aria-hidden="true">
+            <Icon name="arrow-up-right" size={20} />
+          </span>
+        </a>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    min-height: max(38rem, min(100svh, 62rem));
+    overflow: hidden;
+    background: var(--c-ink);
+    color: var(--c-paper);
+  }
+
+  .hero__media {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    --pending-top: calc(var(--header-h) + 0.75rem);
+    --pending-right: var(--gutter);
+  }
+
+  /* Escurecimento para leitura do texto sobre a foto. */
+  .hero__shade {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(to top, rgb(15 31 26 / 0.9) 0%, rgb(15 31 26 / 0.45) 45%, rgb(15 31 26 / 0.15) 75%),
+      linear-gradient(to bottom, rgb(15 31 26 / 0.5) 0%, rgb(15 31 26 / 0) 22%);
+  }
+
+  .hero__route {
+    position: absolute;
+    top: calc(var(--header-h) + 1rem);
+    right: -6rem;
+    z-index: -1;
+    width: min(70vw, 32rem);
+    height: auto;
+    color: var(--c-sun);
+    opacity: 0.85;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hero__route-path {
+      animation: hero-route 2.4s linear infinite;
+    }
+
+    @keyframes hero-route {
+      to {
+        stroke-dashoffset: -28;
+      }
+    }
+  }
+
+  .hero__content {
+    display: grid;
+    align-content: end;
+    gap: 1.25rem;
+    padding-top: calc(var(--header-h) + 3rem);
+    padding-bottom: clamp(2.5rem, 1.5rem + 4vw, 5rem);
+  }
+
+  .hero__kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgb(246 241 231 / 0.9);
+  }
+
+  .hero__dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: var(--c-sun);
+    box-shadow: 0 0 0 0.3rem rgb(255 91 36 / 0.25);
+  }
+
+  .hero__title {
+    max-width: 11ch;
+    font-size: var(--fs-display);
+    font-weight: 800;
+    line-height: 0.92;
+    letter-spacing: -0.045em;
+  }
+
+  .hero__title em {
+    font-style: normal;
+    color: var(--c-sun);
+  }
+
+  .hero__lead {
+    max-width: 34rem;
+    font-size: var(--fs-lg);
+    line-height: 1.5;
+    color: rgb(246 241 231 / 0.88);
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .hero__next {
+    position: relative;
+    display: grid;
+    gap: 0.2rem;
+    margin-top: 1.25rem;
+    padding: 1rem 3.75rem 1rem 1.1rem;
+    border-radius: var(--radius);
+    background: var(--c-paper);
+    color: var(--c-ink);
+    text-decoration: none;
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .hero__next-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--c-sun-deep);
+  }
+
+  .hero__next-title {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  .hero__next-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--c-muted);
+  }
+
+  .hero__next-arrow {
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: var(--c-sun);
+    transform: translateY(-50%);
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  @media (hover: hover) {
+    .hero__next:hover .hero__next-arrow {
+      transform: translateY(-50%) rotate(45deg);
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .hero__content {
+      grid-template-columns: minmax(0, 1fr) auto;
+      column-gap: 3rem;
+    }
+
+    .hero__content > :not(.hero__next) {
+      grid-column: 1;
+    }
+
+    .hero__next {
+      grid-column: 2;
+      grid-row: 3 / span 2;
+      align-self: end;
+      width: 21rem;
+      margin-top: 0;
+    }
+
+    .hero__route {
+      right: 4%;
+      width: min(34rem, 42vw);
+    }
+  }
+</style>

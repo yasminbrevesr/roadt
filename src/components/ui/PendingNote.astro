@@ -1,0 +1,50 @@
+---
+/**
+ * Aviso visível de conteúdo pendente. Só aparece com `site.showPendingMarkers = true`.
+ */
+import { site } from '@/config/site';
+
+interface Props {
+  title?: string;
+  class?: string;
+}
+
+const { title = 'Conteúdo pendente', class: className } = Astro.props;
+---
+
+{
+  site.showPendingMarkers && (
+    <div class:list={['pending-note', className]} role="note">
+      <strong>{title}</strong>
+      <div>
+        <slot />
+      </div>
+    </div>
+  )
+}
+
+<style>
+  .pending-note {
+    display: grid;
+    gap: 0.35rem;
+    padding: 1.1rem 1.25rem;
+    border: 1.5px dashed currentColor;
+    border-radius: var(--radius);
+    font-size: var(--fs-sm);
+    line-height: 1.5;
+    opacity: 0.85;
+  }
+
+  .pending-note strong {
+    font-size: var(--fs-xs);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .pending-note :global(code) {
+    font-size: 0.9em;
+    padding: 0.05em 0.35em;
+    border-radius: 0.3em;
+    background: rgb(15 31 26 / 0.08);
+  }
+</style>

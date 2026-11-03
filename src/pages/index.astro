@@ -1,0 +1,48 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Hero from '@/sections/Hero.astro';
+import DestinationTicker from '@/sections/DestinationTicker.astro';
+import Destinations from '@/sections/Destinations.astro';
+import UpcomingTrips from '@/sections/UpcomingTrips.astro';
+import About from '@/sections/About.astro';
+import WhyTravel from '@/sections/WhyTravel.astro';
+import Reviews from '@/sections/Reviews.astro';
+import Instagram from '@/sections/Instagram.astro';
+import FAQ from '@/sections/FAQ.astro';
+import FinalCTA from '@/sections/FinalCTA.astro';
+import { site } from '@/config/site';
+import { upcomingDepartures } from '@/data/departures';
+import { reviews } from '@/data/reviews';
+import { todayISO } from '@/lib/dates';
+
+const upcoming = upcomingDepartures(todayISO());
+
+// A seção de avaliações só entra quando há avaliações reais (ou no modo de revisão de pendências).
+const showReviews = reviews.items.length > 0 || site.showPendingMarkers;
+
+// Numeração editorial das seções (01, 02, ...), ajustada automaticamente.
+let counter = 0;
+const next = () => String(++counter).padStart(2, '0');
+const idx = {
+  destinations: next(),
+  upcoming: next(),
+  about: next(),
+  why: next(),
+  reviews: showReviews ? next() : undefined,
+  instagram: next(),
+  faq: next(),
+};
+---
+
+<BaseLayout headerOverlay>
+  <Hero nextDeparture={upcoming[0]} />
+  <DestinationTicker />
+  <Destinations index={idx.destinations} upcoming={upcoming} />
+  <UpcomingTrips index={idx.upcoming} upcoming={upcoming} />
+  <About index={idx.about} />
+  <WhyTravel index={idx.why} />
+  {showReviews && <Reviews index={idx.reviews} />}
+  <Instagram index={idx.instagram} />
+  <FAQ index={idx.faq} />
+  <FinalCTA />
+</BaseLayout>

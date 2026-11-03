@@ -1,0 +1,53 @@
+---
+import { brandIcons, strokeIcons, type IconName } from './icons';
+
+interface Props {
+  name: IconName;
+  size?: number | string;
+  /** Rótulo acessível. Sem rótulo, o ícone é decorativo (aria-hidden). */
+  label?: string;
+  class?: string;
+  strokeWidth?: number;
+}
+
+const { name, size = 20, label, class: className, strokeWidth = 2 } = Astro.props;
+const isBrand = name in brandIcons;
+const a11y = label ? { role: 'img' as const, 'aria-label': label } : { 'aria-hidden': 'true' as const };
+---
+
+{
+  isBrand ? (
+    <svg
+      class:list={['icon', className]}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      focusable="false"
+      {...a11y}
+    >
+      <path d={brandIcons[name as keyof typeof brandIcons]} />
+    </svg>
+  ) : (
+    <svg
+      class:list={['icon', className]}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width={strokeWidth}
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      focusable="false"
+      {...a11y}
+      set:html={strokeIcons[name as keyof typeof strokeIcons]}
+    />
+  )
+}
+
+<style>
+  .icon {
+    flex: none;
+  }
+</style>

@@ -1,0 +1,80 @@
+---
+import SectionTitle from '@/components/ui/SectionTitle.astro';
+import FAQAccordion from '@/components/FAQAccordion.astro';
+import CTAButton from '@/components/ui/CTAButton.astro';
+import { faq } from '@/data/faq';
+import { site } from '@/config/site';
+import { whatsappLink } from '@/lib/links';
+
+interface Props {
+  index?: string;
+}
+
+const { index } = Astro.props;
+---
+
+<section id="duvidas" class="section faq-section surface-sand" aria-labelledby="duvidas-title">
+  <div class="container faq-section__grid">
+    <div class="faq-section__aside">
+      <SectionTitle
+        id="duvidas-title"
+        index={index}
+        eyebrow="Dúvidas frequentes"
+        title="Antes de <em>embarcar</em>"
+        lead="Reserva, pagamento, embarque e cancelamento: as respostas para as perguntas mais comuns."
+      />
+      <div class="faq-section__help" data-reveal>
+        <p>Não encontrou o que procurava?</p>
+        <CTAButton href={whatsappLink('Olá! Tenho uma dúvida sobre as viagens da RoadTrip021.')} variant="dark" icon="whatsapp" trailingIcon={null} external>
+          Fale no WhatsApp {site.whatsapp.display}
+        </CTAButton>
+      </div>
+    </div>
+    <div class="faq-section__list" data-reveal>
+      <FAQAccordion items={faq} />
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq-section__grid {
+    display: grid;
+    gap: 2.5rem;
+  }
+
+  /* Celular: título → perguntas → ajuda pelo WhatsApp */
+  @media (max-width: 63.99rem) {
+    .faq-section__aside {
+      display: contents;
+    }
+
+    .faq-section__list {
+      order: 2;
+      margin-top: -1rem;
+    }
+
+    .faq-section__help {
+      order: 3;
+    }
+  }
+
+  .faq-section__help {
+    display: grid;
+    justify-items: start;
+    gap: 0.75rem;
+    font-weight: 600;
+  }
+
+  @media (min-width: 64rem) {
+    .faq-section__grid {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      gap: 4rem;
+      align-items: start;
+    }
+
+    .faq-section__aside {
+      position: sticky;
+      top: calc(var(--header-h) + 2rem);
+    }
+  }
+</style>

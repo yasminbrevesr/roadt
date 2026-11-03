@@ -1,0 +1,312 @@
+---
+/**
+ * Card de próxima saída, no formato de "cartão de embarque".
+ * O botão leva à página do produto na loja Nuvemshop (onde ficam preço, vagas e checkout).
+ */
+import Photo from '@/components/ui/Photo.astro';
+import Icon from '@/components/ui/Icon.astro';
+import CTAButton from '@/components/ui/CTAButton.astro';
+import type { Departure } from '@/data/departures';
+import type { Destination } from '@/data/destinations';
+import { dateParts, durationInDays, formatLong, formatPrice } from '@/lib/dates';
+import { storeLink } from '@/lib/links';
+
+interface Props {
+  departure: Departure;
+  destination?: Destination;
+  /** Primeira saída da lista ganha destaque visual. */
+  featured?: boolean;
+}
+
+const { departure: dep, destination, featured = false } = Astro.props;
+const start = dateParts(dep.start);
+const end = dateParts(dep.end);
+const days = durationInDays(dep.start, dep.end);
+const photoName = destination?.slug ?? dep.destination;
+const code = destination?.code ?? dep.destination.slice(0, 3).toUpperCase();
+const headingId = `saida-${dep.id}`;
+---
+
+<article class:list={['pass', { 'pass--featured': featured }]} data-start={dep.start} aria-labelledby={headingId}>
+  <div class="pass__media">
+    <Photo
+      name={photoName}
+      alt={destination?.imageAlt ?? dep.title}
+      sizes="(min-width: 64rem) 280px, (min-width: 45rem) 40vw, 92vw"
+      widths={[400, 640, 900]}
+    />
+    <span class="pass__code" aria-hidden="true">RT021 · {code}</span>
+  </div>
+
+  <div class="pass__body">
+    <div class="pass__head">
+      <p class="pass__location">
+        <Icon name="pin" size={14} />
+        {dep.location}
+      </p>
+      <h3 class="pass__title" id={headingId}>{dep.title}</h3>
+      {dep.subtitle && <p class="pass__subtitle">{dep.subtitle}</p>}
+    </div>
+
+    <dl class="pass__trip">
+      <div class="pass__leg">
+        <dt>Ida</dt>
+        <dd>
+          <time datetime={dep.start} title={formatLong(dep.start)}>
+            <span class="pass__day">{start.day}</span>
+            <span class="pass__month">{start.month} {start.year}</span>
+          </time>
+        </dd>
+      </div>
+      <div class="pass__path" aria-hidden="true">
+        <span class="pass__line"></span>
+        <Icon name="plane" size={18} />
+        <span class="pass__line"></span>
+      </div>
+      <div class="pass__leg pass__leg--end">
+        <dt>Volta</dt>
+        <dd>
+          <time datetime={dep.end} title={formatLong(dep.end)}>
+            <span class="pass__day">{end.day}</span>
+            <span class="pass__month">{end.month} {end.year}</span>
+          </time>
+        </dd>
+      </div>
+      <div class="pass__duration">
+        <dt class="visually-hidden">Duração</dt>
+        <dd>
+          <Icon name="clock" size={14} />
+          {days} dias
+          {dep.note && <span class="pass__note">· {dep.note}</span>}
+        </dd>
+      </div>
+    </dl>
+
+    <div class="pass__foot">
+      <p class="pass__price">
+        {
+          dep.price ? (
+            <>
+              <span>a partir de</span>
+              <strong>{formatPrice(dep.price)}</strong>
+            </>
+          ) : (
+            <span>Valores e vagas na página da viagem</span>
+          )
+        }
+      </p>
+      <CTAButton href={storeLink(dep.url)} aria-label={`Ver viagem: ${dep.title}, saída em ${formatLong(dep.start)}`}>
+        Ver viagem
+      </CTAButton>
+    </div>
+  </div>
+</article>
+
+<style>
+  .pass {
+    --notch: 0.85rem;
+    --pass-bg: var(--c-paper);
+
+    display: grid;
+    grid-template-rows: auto 1fr;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--pass-bg);
+    color: var(--c-ink);
+  }
+
+  .pass__media {
+    position: relative;
+    aspect-ratio: 2 / 1;
+    overflow: hidden;
+  }
+
+  .pass__code {
+    position: absolute;
+    left: 1rem;
+    bottom: 1rem;
+    padding: 0.3rem 0.65rem;
+    border-radius: var(--radius-sm);
+    background: var(--c-ink);
+    color: var(--c-paper);
+    font-family: var(--font-display);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+  }
+
+  .pass__body {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 1.25rem;
+    padding: 1.4rem 1.35rem 1.35rem;
+  }
+
+  .pass__location {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.45rem;
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--c-sun-deep);
+  }
+
+  .pass__title {
+    font-size: clamp(1.5rem, 1.3rem + 0.9vw, 2rem);
+    line-height: 1.05;
+  }
+
+  .pass__subtitle {
+    margin-top: 0.35rem;
+    color: var(--c-muted);
+    font-size: var(--fs-sm);
+  }
+
+  .pass__trip {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: end;
+    gap: 0.4rem 0.9rem;
+    align-self: end;
+  }
+
+  .pass__leg dt,
+  .pass__duration dt {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--c-muted);
+  }
+
+  .pass__leg--end {
+    text-align: right;
+  }
+
+  .pass__leg time {
+    display: grid;
+  }
+
+  .pass__day {
+    font-family: var(--font-display);
+    font-size: clamp(2.25rem, 1.9rem + 1.2vw, 2.85rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+
+  .pass__month {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .pass__path {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding-bottom: 1.6rem;
+    color: var(--c-sun-deep);
+  }
+
+  .pass__line {
+    flex: 1;
+    border-top: 2px dashed rgb(15 31 26 / 0.3);
+  }
+
+  .pass__duration {
+    grid-column: 1 / -1;
+  }
+
+  .pass__duration dd {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: var(--fs-sm);
+    font-weight: 600;
+  }
+
+  .pass__note {
+    font-weight: 500;
+    color: var(--c-muted);
+  }
+
+  /* Picote do cartão de embarque */
+  .pass__foot {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-inline: -1.35rem;
+    padding: 1.25rem 1.35rem 0;
+    border-top: 2px dashed rgb(15 31 26 / 0.22);
+  }
+
+  .pass__foot::before,
+  .pass__foot::after {
+    content: '';
+    position: absolute;
+    top: calc(var(--notch) * -1 - 1px);
+    width: calc(var(--notch) * 2);
+    height: calc(var(--notch) * 2);
+    border-radius: 50%;
+    background: var(--notch-bg, var(--c-ink));
+  }
+
+  .pass__foot::before {
+    left: calc(var(--notch) * -1);
+  }
+
+  .pass__foot::after {
+    right: calc(var(--notch) * -1);
+  }
+
+  .pass__price {
+    display: grid;
+    font-size: var(--fs-sm);
+    line-height: 1.35;
+    color: var(--c-muted);
+    max-width: 14rem;
+  }
+
+  .pass__price strong {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--c-ink);
+  }
+
+  /* Tablet+: foto ao lado das informações */
+  @media (min-width: 45rem) {
+    .pass {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+      grid-template-rows: none;
+    }
+
+    .pass__media {
+      aspect-ratio: auto;
+      min-height: 100%;
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .pass {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    }
+
+    .pass__body {
+      padding: 1.75rem 1.75rem 1.6rem;
+    }
+
+    .pass__foot {
+      margin-inline: -1.75rem;
+      padding: 1.35rem 1.75rem 0;
+    }
+  }
+</style>

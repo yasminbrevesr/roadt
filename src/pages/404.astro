@@ -1,0 +1,58 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import CTAButton from '@/components/ui/CTAButton.astro';
+import { storePaths } from '@/config/site';
+import { storeLink } from '@/lib/links';
+---
+
+<BaseLayout title="Página não encontrada · RoadTrip021" noindex>
+  <section class="nf">
+    <div class="container nf__inner">
+      <p class="nf__code" aria-hidden="true">404</p>
+      <h1 class="nf__title">Essa rota não existe.</h1>
+      <p class="lead">A página que você procura mudou de lugar ou nunca existiu. Que tal escolher um novo destino?</p>
+      <div class="nf__actions">
+        <CTAButton href="/" size="lg" trailingIcon={null}>Voltar ao início</CTAButton>
+        <CTAButton href={storeLink(storePaths.allTrips)} variant="outline" size="lg" trailingIcon="arrow-up-right">
+          Ver viagens
+        </CTAButton>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .nf {
+    display: grid;
+    min-height: 80svh;
+    padding-block: calc(var(--header-h) + 4rem) 5rem;
+  }
+
+  .nf__inner {
+    display: grid;
+    align-content: center;
+    justify-items: start;
+    gap: 1.25rem;
+  }
+
+  .nf__code {
+    font-family: var(--font-display);
+    font-size: clamp(6rem, 4rem + 10vw, 12rem);
+    font-weight: 800;
+    line-height: 0.85;
+    letter-spacing: -0.06em;
+    color: transparent;
+    -webkit-text-stroke: 2px var(--c-sun-deep);
+  }
+
+  .nf__title {
+    font-size: var(--fs-h2);
+  }
+
+  .nf__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+</style>

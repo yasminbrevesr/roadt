@@ -1,0 +1,249 @@
+---
+/**
+ * Card de destino ("Descubra nossas viagens").
+ * O card inteiro é clicável (link no título + área estendida), mantendo um único
+ * link acessível por card.
+ */
+import Photo from '@/components/ui/Photo.astro';
+import Icon from '@/components/ui/Icon.astro';
+import type { Destination } from '@/data/destinations';
+import { scopeLabels } from '@/data/destinations';
+import type { Departure } from '@/data/departures';
+import { dateParts, formatLong, formatPrice } from '@/lib/dates';
+
+interface Props {
+  destination: Destination;
+  href: string;
+  nextDeparture?: Departure;
+  /** Preço "a partir de", somente se confirmado. */
+  price?: number;
+  ctaLabel?: string;
+  /** Card largo (ocupa duas colunas): a altura acompanha os vizinhos da linha. */
+  wide?: boolean;
+}
+
+const { destination: d, href, nextDeparture, price, ctaLabel = 'Ver saídas', wide = false } = Astro.props;
+const next = nextDeparture ? dateParts(nextDeparture.start) : undefined;
+---
+
+<article class:list={['tcard', { 'tcard--wide': wide }]} data-scope={d.scope}>
+  <div class="tcard__media">
+    <Photo
+      name={d.slug}
+      alt={d.imageAlt}
+      sizes={wide
+        ? '(min-width: 75rem) 640px, (min-width: 37.5rem) 92vw, 80vw'
+        : '(min-width: 75rem) 320px, (min-width: 45rem) 31vw, (min-width: 37.5rem) 46vw, 80vw'}
+      widths={wide ? [480, 800, 1200] : [400, 600, 800]}
+      pending="compact"
+    />
+  </div>
+  <span class="tcard__scope">{scopeLabels[d.scope]}</span>
+
+  <div class="tcard__body">
+    <p class="tcard__location">
+      <Icon name="pin" size={14} />
+      {d.location}
+    </p>
+    <h3 class="tcard__title">
+      <a href={href} class="tcard__link">{d.name}</a>
+    </h3>
+    {d.subtitle && <p class="tcard__subtitle">{d.subtitle}</p>}
+
+    <ul class="tcard__meta" aria-label="Detalhes">
+      {
+        d.durationDays && (
+          <li>
+            <Icon name="clock" size={14} />
+            {d.durationDays} dias
+          </li>
+        )
+      }
+      {
+        next && nextDeparture && (
+          <li>
+            <Icon name="calendar" size={14} />
+            <span>
+              Próxima saída: <time datetime={nextDeparture.start} title={formatLong(nextDeparture.start)}>{next.day} {next.month}</time>
+            </span>
+          </li>
+        )
+      }
+      {price && <li>a partir de {formatPrice(price)}</li>}
+    </ul>
+
+    <span class="tcard__cta" aria-hidden="true">
+      {ctaLabel}
+      <Icon name="arrow-up-right" size={16} />
+    </span>
+  </div>
+</article>
+
+<style>
+  .tcard {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    aspect-ratio: 4 / 5;
+    min-width: 0;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--c-ink);
+    color: var(--c-paper);
+    transition:
+      transform var(--dur) var(--ease-out),
+      box-shadow var(--dur) var(--ease-out);
+  }
+
+  .tcard--wide {
+    aspect-ratio: auto;
+    height: 100%;
+    min-height: 22rem;
+  }
+
+  .tcard__media {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    transition: transform var(--dur-slow) var(--ease-out);
+  }
+
+  /* Escurecimento apenas na base, para garantir leitura do texto sobre a foto. */
+  .tcard::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(to top, rgb(15 31 26 / 0.92) 0%, rgb(15 31 26 / 0.55) 38%, rgb(15 31 26 / 0) 68%);
+    pointer-events: none;
+  }
+
+  .tcard__scope {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: var(--radius-pill);
+    background: var(--c-paper);
+    color: var(--c-ink);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .tcard__body {
+    display: grid;
+    gap: 0.45rem;
+    padding: 1.35rem 1.35rem 1.4rem;
+  }
+
+  .tcard__location {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--c-gold);
+  }
+
+  .tcard__title {
+    font-size: clamp(1.6rem, 1.35rem + 0.9vw, 2rem);
+    line-height: 1.02;
+  }
+
+  .tcard__link {
+    text-decoration: none;
+  }
+
+  /* Área clicável estendida para o card inteiro. */
+  .tcard__link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+  }
+
+  .tcard__link:focus-visible {
+    outline: none;
+  }
+
+  .tcard:has(.tcard__link:focus-visible) {
+    outline: 3px solid var(--c-sun-deep);
+    outline-offset: 4px;
+  }
+
+  .tcard__subtitle {
+    font-size: var(--fs-sm);
+    color: rgb(246 241 231 / 0.85);
+    line-height: 1.4;
+  }
+
+  .tcard__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+    margin-top: 0.35rem;
+    padding: 0;
+    list-style: none;
+    font-size: var(--fs-sm);
+    color: rgb(246 241 231 / 0.9);
+  }
+
+  .tcard__meta li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .tcard__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-self: start;
+    gap: 0.35rem;
+    margin-top: 0.75rem;
+    padding: 0.55rem 0.95rem;
+    border: 1.5px solid rgb(246 241 231 / 0.5);
+    border-radius: var(--radius-pill);
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .tcard:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-card);
+    }
+
+    .tcard:hover .tcard__media {
+      transform: scale(1.06);
+    }
+
+    .tcard:hover .tcard__cta {
+      background: var(--c-sun);
+      border-color: var(--c-sun);
+      color: var(--c-ink);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tcard,
+    .tcard__media {
+      transition: none;
+    }
+
+    .tcard:hover,
+    .tcard:hover .tcard__media {
+      transform: none;
+    }
+  }
+</style>

@@ -1,0 +1,142 @@
+---
+/**
+ * Galeria estática com fotos do Instagram (não há integração com a API do Instagram).
+ * Toda a galeria é um único link para o perfil oficial.
+ */
+import SectionTitle from '@/components/ui/SectionTitle.astro';
+import Photo from '@/components/ui/Photo.astro';
+import CTAButton from '@/components/ui/CTAButton.astro';
+import Icon from '@/components/ui/Icon.astro';
+import { instagramGallery } from '@/data/gallery';
+import { site } from '@/config/site';
+
+interface Props {
+  index?: string;
+}
+
+const { index } = Astro.props;
+---
+
+<section id="instagram" class="section insta" aria-labelledby="insta-title">
+  <div class="container">
+    <div class="insta__head">
+      <SectionTitle
+        id="insta-title"
+        index={index}
+        eyebrow={`@${site.instagram.handle}`}
+        title="A comunidade em <em>movimento</em>"
+        lead="Paisagens, bastidores e o grupo reunido: acompanhe as viagens e as próximas aventuras no nosso Instagram."
+      />
+      <CTAButton
+        href={site.instagram.url}
+        variant="dark"
+        icon="instagram"
+        trailingIcon="arrow-up-right"
+        external
+        class="insta__cta"
+      >
+        Seguir @{site.instagram.handle}
+      </CTAButton>
+    </div>
+
+    <a class="insta__gallery" href={site.instagram.url} target="_blank" rel="noopener noreferrer" data-reveal>
+      <span class="visually-hidden">Ver fotos no Instagram @{site.instagram.handle} (abre em nova aba)</span>
+      {
+        instagramGallery.map((item, i) => (
+          <span class:list={['insta__tile', `insta__tile--${i + 1}`]}>
+            <Photo name={item.photo} alt={item.alt} sizes="(min-width: 64rem) 220px, (min-width: 40rem) 32vw, 48vw" widths={[300, 480, 640]} />
+            <span class="insta__overlay" aria-hidden="true">
+              <Icon name="instagram" size={26} />
+            </span>
+          </span>
+        ))
+      }
+    </a>
+  </div>
+</section>
+
+<style>
+  .insta__head {
+    display: grid;
+    gap: 0 2rem;
+  }
+
+  .insta__head :global(.insta__cta) {
+    justify-self: start;
+    margin: -1rem 0 2.5rem;
+  }
+
+  @media (min-width: 56rem) {
+    .insta__head {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+    }
+
+    .insta__head :global(.insta__cta) {
+      margin: 0 0 clamp(2.25rem, 1.5rem + 3vw, 4rem);
+    }
+  }
+
+  .insta__gallery {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.625rem;
+    text-decoration: none;
+    border-radius: var(--radius-lg);
+  }
+
+  @media (min-width: 40rem) {
+    .insta__gallery {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .insta__gallery {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 0.875rem;
+    }
+
+    /* Ritmo editorial: alturas alternadas */
+    .insta__tile:nth-child(even) {
+      transform: translateY(1.75rem);
+    }
+  }
+
+  .insta__gallery:focus-visible {
+    outline-offset: 6px;
+  }
+
+  .insta__tile {
+    position: relative;
+    display: block;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: var(--radius);
+  }
+
+  .insta__tile :global(.photo) {
+    transition: transform var(--dur-slow) var(--ease-out);
+  }
+
+  .insta__overlay {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgb(15 31 26 / 0.45);
+    color: var(--c-paper);
+    opacity: 0;
+    transition: opacity var(--dur) var(--ease-out);
+  }
+
+  @media (hover: hover) {
+    .insta__tile:hover :global(.photo) {
+      transform: scale(1.06);
+    }
+
+    .insta__tile:hover .insta__overlay {
+      opacity: 1;
+    }
+  }
+</style>

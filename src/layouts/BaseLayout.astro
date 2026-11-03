@@ -1,0 +1,116 @@
+---
+import '@fontsource-variable/bricolage-grotesque/opsz.css';
+import '@fontsource-variable/figtree/wght.css';
+import '@/styles/global.css';
+
+import Header from '@/components/layout/Header.astro';
+import Footer from '@/components/layout/Footer.astro';
+import { site } from '@/config/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Cabeçalho transparente sobre o hero. */
+  headerOverlay?: boolean;
+  noindex?: boolean;
+}
+
+const { title = site.seo.title, description = site.seo.description, headerOverlay = false, noindex = false } =
+  Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const ogImage = site.seo.ogImage ? new URL(site.seo.ogImage, Astro.site).href : undefined;
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'TravelAgency',
+  name: site.name,
+  slogan: site.tagline,
+  description: site.mission,
+  url: Astro.site?.href,
+  foundingDate: String(site.since.year),
+  areaServed: 'BR',
+  sameAs: [site.instagram.url],
+  contactPoint: {
+    '@type': 'ContactPoint',
+    contactType: 'customer service',
+    telephone: `+${site.whatsapp.number}`,
+    availableLanguage: 'Portuguese',
+  },
+};
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta name="theme-color" content="#0f1f1a" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+
+    <!-- Marca JS ativo antes da renderização (evita "piscar" nas animações de entrada). -->
+    <script is:inline>
+      document.documentElement.classList.add('js');
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+    <Header overlay={headerOverlay} />
+    <main id="conteudo" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+
+    <script>
+      // Animações de entrada: elementos com [data-reveal] aparecem ao entrar na tela.
+      const reveal = document.querySelectorAll<HTMLElement>('[data-reveal]');
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduce || !('IntersectionObserver' in window)) {
+        reveal.forEach((el) => el.classList.add('is-visible'));
+      } else {
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                io.unobserve(entry.target);
+              }
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.08 },
+        );
+        reveal.forEach((el) => io.observe(el));
+      }
+
+      // Saídas com data já passada somem mesmo que o site não seja republicado.
+      const today = new Date().toISOString().slice(0, 10);
+      document.querySelectorAll<HTMLElement>('[data-start]').forEach((el) => {
+        if ((el.dataset.start ?? '') < today) {
+          const target = el.closest<HTMLElement>('[data-departure-item]') ?? el;
+          target.hidden = true;
+        }
+      });
+    </script>
+  </body>
+</html>
+
+<style>
+  main:focus {
+    outline: none;
+  }
+</style>

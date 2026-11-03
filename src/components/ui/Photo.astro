@@ -1,0 +1,186 @@
+---
+/**
+ * Foto otimizada (AVIF/WebP, tamanhos responsivos, lazy loading).
+ *
+ * Como usar uma foto real: salve o arquivo em src/assets/photos/<name>.jpg
+ * (também aceita .jpeg, .png, .webp, .avif). O build gera as versões otimizadas.
+ * Enquanto o arquivo não existir, é exibido um espaço reservado identificado.
+ *
+ * O componente ocupa 100% do elemento pai — quem usa define a proporção (aspect-ratio/altura).
+ */
+import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { site } from '@/config/site';
+import Icon from './Icon.astro';
+
+type Tone = 'ink' | 'lagoon' | 'clay';
+
+interface Props {
+  /** Nome do arquivo em src/assets/photos, sem extensão. */
+  name: string;
+  alt: string;
+  sizes?: string;
+  widths?: number[];
+  /** true para a imagem principal da tela (LCP): carrega antes, sem lazy loading. */
+  priority?: boolean;
+  tone?: Tone;
+  /**
+   * Etiqueta de foto pendente: 'full' (texto + nome do arquivo), 'compact' (só ícone)
+   * ou 'compact-mobile' (só ícone em telas pequenas).
+   */
+  pending?: 'full' | 'compact' | 'compact-mobile';
+  class?: string;
+}
+
+const {
+  name,
+  alt,
+  sizes = '100vw',
+  widths = [480, 800, 1200, 1600],
+  priority = false,
+  tone,
+  pending = 'full',
+  class: className,
+} = Astro.props;
+
+const photos = import.meta.glob<{ default: ImageMetadata }>('/src/assets/photos/*.{jpg,jpeg,png,webp,avif}', {
+  eager: true,
+});
+
+const image = Object.entries(photos).find(([path]) => {
+  const file = path.split('/').pop() ?? '';
+  return file.replace(/\.[^.]+$/, '') === name;
+})?.[1].default;
+
+const tones: Tone[] = ['ink', 'lagoon', 'clay'];
+const autoTone = tones[[...name].reduce((acc, ch) => acc + ch.charCodeAt(0), 0) % tones.length];
+const placeholderTone = tone ?? autoTone;
+const usableWidths = image ? widths.filter((w) => w <= image.width) : [];
+if (image && usableWidths.length === 0) usableWidths.push(image.width);
+---
+
+{
+  image ? (
+    <Picture
+      src={image}
+      alt={alt}
+      widths={usableWidths}
+      sizes={sizes}
+      formats={['avif', 'webp']}
+      loading={priority ? 'eager' : 'lazy'}
+      decoding={priority ? 'sync' : 'async'}
+      fetchpriority={priority ? 'high' : 'auto'}
+      class="photo__img"
+      pictureAttributes={{ class: ['photo', className].filter(Boolean).join(' ') }}
+    />
+  ) : (
+    <div
+      class:list={['photo', 'photo--placeholder', className]}
+      data-tone={placeholderTone}
+      data-photo-pending={name}
+      role="img"
+      aria-label={alt}
+    >
+      {site.showPendingMarkers && (
+        <span class="photo__pending" data-mode={pending} title={`Foto pendente: src/assets/photos/${name}.jpg`} aria-hidden="true">
+          <span class="photo__pending-title">
+            <Icon name="camera" size={14} />
+            <span class="photo__pending-text">Foto pendente</span>
+          </span>
+          <span class="photo__pending-file">{name}.jpg</span>
+        </span>
+      )}
+    </div>
+  )
+}
+
+<style is:global>
+  /* Global: as classes são aplicadas também em <picture>/<img> gerados pelo Astro. */
+  .photo {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .photo__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .photo--placeholder {
+    position: relative;
+    --ph-bg: var(--c-ink-2);
+    background-color: var(--ph-bg);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cg fill='none' stroke='%23f6f1e7' stroke-opacity='.13' stroke-width='1.25'%3E%3Cpath d='M0 15Q60 5 120 15T240 15'/%3E%3Cpath d='M0 45Q60 29 120 45T240 45'/%3E%3Cpath d='M0 75Q60 67 120 75T240 75'/%3E%3Cpath d='M0 105Q60 91 120 105T240 105'/%3E%3Cpath d='M0 135Q60 124 120 135T240 135'/%3E%3Cpath d='M0 165Q60 148 120 165T240 165'/%3E%3Cpath d='M0 195Q60 186 120 195T240 195'/%3E%3Cpath d='M0 225Q60 212 120 225T240 225'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 240px 240px;
+  }
+
+  .photo--placeholder[data-tone='lagoon'] {
+    --ph-bg: var(--c-lagoon);
+  }
+
+  .photo--placeholder[data-tone='clay'] {
+    --ph-bg: #6e3418;
+  }
+
+  /* Etiqueta "Foto pendente": posição ajustável pelo componente pai via variáveis. */
+  .photo__pending {
+    position: absolute;
+    top: var(--pending-top, 0.75rem);
+    right: var(--pending-right, 0.75rem);
+    left: var(--pending-left, auto);
+    display: grid;
+    gap: 0.1rem;
+    max-width: calc(100% - 1.5rem);
+    padding: 0.35rem 0.6rem;
+    border: 1px dashed rgb(246 241 231 / 0.5);
+    border-radius: 0.6rem;
+    background: rgb(15 31 26 / 0.6);
+    color: var(--c-paper);
+    font-size: 0.75rem;
+    line-height: 1.25;
+  }
+
+  .photo__pending-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-weight: 700;
+  }
+
+  .photo__pending-file {
+    font-size: 0.6875rem;
+    opacity: 0.8;
+    overflow-wrap: anywhere;
+  }
+
+  /* Versão compacta (apenas o ícone) para espaços pequenos */
+  .photo__pending[data-mode='compact'] {
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border-radius: 50%;
+  }
+
+  .photo__pending[data-mode='compact'] .photo__pending-text,
+  .photo__pending[data-mode='compact'] .photo__pending-file {
+    display: none;
+  }
+
+  @media (max-width: 40rem) {
+    .photo__pending[data-mode='compact-mobile'] {
+      place-items: center;
+      width: 2rem;
+      height: 2rem;
+      padding: 0;
+      border-radius: 50%;
+    }
+
+    .photo__pending[data-mode='compact-mobile'] .photo__pending-text,
+    .photo__pending[data-mode='compact-mobile'] .photo__pending-file {
+      display: none;
+    }
+  }
+</style>

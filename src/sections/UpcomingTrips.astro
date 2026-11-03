@@ -1,0 +1,141 @@
+---
+import SectionTitle from '@/components/ui/SectionTitle.astro';
+import DepartureCard from '@/components/cards/DepartureCard.astro';
+import CTAButton from '@/components/ui/CTAButton.astro';
+import type { Departure } from '@/data/departures';
+import { findDestination } from '@/data/destinations';
+import { storePaths } from '@/config/site';
+import { storeLink } from '@/lib/links';
+
+interface Props {
+  index?: string;
+  upcoming: Departure[];
+  /** Quantas saídas mostrar na homepage. */
+  limit?: number;
+}
+
+const { index, upcoming, limit = 6 } = Astro.props;
+const list = upcoming.slice(0, limit);
+/** Em telas de 1 coluna (celular/tablet) mostramos menos cartões para a página não ficar longa demais. */
+const MOBILE_LIMIT = 4;
+const allTrips = storeLink(storePaths.allTrips);
+---
+
+<section id="proximas-saidas" class="section upcoming surface-ink on-dark" aria-labelledby="saidas-title">
+  <div class="container">
+    <div class="upcoming__head">
+      <SectionTitle
+        id="saidas-title"
+        index={index}
+        eyebrow="Calendário"
+        title="Próximas <em>saídas</em>"
+        lead="Escolha a data, garanta sua vaga e comece a contar os dias."
+      />
+      <CTAButton href={allTrips} variant="outline-light" trailingIcon="arrow-up-right" class="upcoming__all">
+        Ver calendário completo
+      </CTAButton>
+    </div>
+
+    {
+      list.length > 0 ? (
+        <ul class="upcoming__grid">
+          {list.map((departure, i) => (
+            <li data-departure-item data-reveal style={`--reveal-delay:${(i % 2) * 90}ms`}>
+              <DepartureCard departure={departure} destination={findDestination(departure.destination)} />
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="upcoming__empty">
+          Novas datas em breve. Enquanto isso, confira <a href={allTrips}>todas as viagens disponíveis</a>.
+        </p>
+      )
+    }
+
+    {
+      upcoming.length > MOBILE_LIMIT && (
+        <div class="upcoming__more">
+          <CTAButton href={allTrips} variant="light" trailingIcon="arrow-up-right" block>
+            Ver todas as saídas
+          </CTAButton>
+        </div>
+      )
+    }
+
+    <p class="upcoming__note">
+      Preço, vagas e formas de pagamento aparecem na página de cada viagem, na nossa loja online.
+    </p>
+  </div>
+</section>
+
+<style>
+  .upcoming__head {
+    display: grid;
+    align-items: end;
+    gap: 0 2rem;
+  }
+
+  .upcoming__head :global(.upcoming__all) {
+    justify-self: start;
+    margin: -1rem 0 2.5rem;
+  }
+
+  @media (min-width: 56rem) {
+    .upcoming__head {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .upcoming__head :global(.upcoming__all) {
+      margin: 0 0 clamp(2.25rem, 1.5rem + 3vw, 4rem);
+    }
+  }
+
+  .upcoming__grid {
+    display: grid;
+    gap: 1.25rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 64rem) {
+    .upcoming__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.5rem;
+    }
+  }
+
+  .upcoming__grid > li {
+    display: grid;
+  }
+
+  .upcoming__more {
+    display: none;
+  }
+
+  /* Celular e tablet (1 coluna): no máximo 4 cartões + botão para ver todas */
+  @media (max-width: 63.99rem) {
+    .upcoming__grid > li:nth-child(n + 5) {
+      display: none;
+    }
+
+    .upcoming__more {
+      display: block;
+      margin-top: 1.25rem;
+    }
+  }
+
+  .upcoming__empty {
+    font-size: var(--fs-lg);
+  }
+
+  .upcoming__empty a {
+    color: var(--c-gold);
+    font-weight: 600;
+  }
+
+  .upcoming__note {
+    margin-top: 2rem;
+    font-size: var(--fs-sm);
+    color: var(--c-muted-dark);
+  }
+</style>

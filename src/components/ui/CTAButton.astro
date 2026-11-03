@@ -1,0 +1,142 @@
+---
+/**
+ * Botão de ação (sempre um link real — nunca um botão sem destino).
+ */
+import type { HTMLAttributes } from 'astro/types';
+import Icon from './Icon.astro';
+import type { IconName } from './icons';
+
+type Variant = 'primary' | 'outline' | 'outline-light' | 'dark' | 'light';
+
+interface Props extends Omit<HTMLAttributes<'a'>, 'href'> {
+  href: string;
+  variant?: Variant;
+  size?: 'md' | 'lg';
+  /** Ícone à esquerda do texto (ex.: whatsapp). */
+  icon?: IconName;
+  /** Ícone à direita (padrão: seta). Use `null` para nenhum. */
+  trailingIcon?: IconName | null;
+  /** Abre em nova aba (links de terceiros, como WhatsApp e Instagram). */
+  external?: boolean;
+  block?: boolean;
+}
+
+const {
+  href,
+  variant = 'primary',
+  size = 'md',
+  icon,
+  trailingIcon = 'arrow-right',
+  external = false,
+  block = false,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const externalProps = external ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+---
+
+<a
+  href={href}
+  class:list={['btn', `btn--${variant}`, `btn--${size}`, { 'btn--block': block }, className]}
+  {...externalProps}
+  {...rest}
+>
+  {icon && <Icon name={icon} size={size === 'lg' ? 20 : 18} />}
+  <span class="btn__label"><slot /></span>
+  {trailingIcon && <Icon name={trailingIcon} size={size === 'lg' ? 20 : 18} class="btn__trail" />}
+  {external && <span class="visually-hidden"> (abre em nova aba)</span>}
+</a>
+
+<style>
+  .btn {
+    --btn-bg: var(--c-sun);
+    --btn-fg: var(--c-ink);
+    --btn-border: transparent;
+    --btn-bg-hover: #ff7a4a;
+    --btn-fg-hover: var(--c-ink);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    min-height: 3rem;
+    padding: 0.75rem 1.35rem;
+    border: 1.5px solid var(--btn-border);
+    border-radius: var(--radius-pill);
+    background: var(--btn-bg);
+    color: var(--btn-fg);
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.15;
+    letter-spacing: -0.005em;
+    text-align: center;
+    text-decoration: none;
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn--lg {
+    min-height: 3.5rem;
+    padding: 0.9rem 1.7rem;
+    font-size: 1.0625rem;
+  }
+
+  .btn--block {
+    display: flex;
+    width: 100%;
+  }
+
+  .btn:hover {
+    background: var(--btn-bg-hover);
+    color: var(--btn-fg-hover);
+  }
+
+  .btn:active {
+    transform: scale(0.98);
+  }
+
+  .btn :global(.btn__trail) {
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  @media (hover: hover) {
+    .btn:hover :global(.btn__trail) {
+      transform: translateX(3px);
+    }
+  }
+
+  .btn--outline {
+    --btn-bg: transparent;
+    --btn-fg: var(--c-ink);
+    --btn-border: var(--c-ink);
+    --btn-bg-hover: var(--c-ink);
+    --btn-fg-hover: var(--c-paper);
+  }
+
+  .btn--outline-light {
+    --btn-bg: transparent;
+    --btn-fg: var(--c-paper);
+    --btn-border: rgb(246 241 231 / 0.55);
+    --btn-bg-hover: var(--c-paper);
+    --btn-fg-hover: var(--c-ink);
+  }
+
+  .btn--dark {
+    --btn-bg: var(--c-ink);
+    --btn-fg: var(--c-paper);
+    --btn-bg-hover: var(--c-lagoon);
+    --btn-fg-hover: var(--c-paper);
+  }
+
+  .btn--light {
+    --btn-bg: var(--c-paper);
+    --btn-fg: var(--c-ink);
+    --btn-bg-hover: #fff;
+    --btn-fg-hover: var(--c-ink);
+  }
+</style>
