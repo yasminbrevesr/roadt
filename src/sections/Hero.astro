@@ -12,7 +12,6 @@
 import Photo from '@/components/ui/Photo.astro';
 import CTAButton from '@/components/ui/CTAButton.astro';
 import { heroSlides as allSlides, HERO_INTERVAL_MS } from '@/data/hero';
-import { whatsappLink } from '@/lib/links';
 import { hasPhoto } from '@/lib/photos';
 
 const available = allSlides.filter((slide) => hasPhoto(slide.photo));
@@ -59,14 +58,12 @@ const tones = ['ink', 'lagoon', 'clay'] as const;
   <div class="hero__shade" aria-hidden="true"></div>
 
   <div class="hero__content container">
-    <p class="hero__kicker">Viagens e experiências em grupo</p>
     <h1 class="hero__title">Sua próxima <em>história</em> começa aqui.</h1>
     <p class="hero__lead">
       Conheça lugares incríveis, faça novas amizades e viva experiências que vão muito além de uma viagem.
     </p>
     <div class="hero__actions">
-      <CTAButton href="#viagens" size="lg">Explorar viagens</CTAButton>
-      <CTAButton href={whatsappLink()} variant="outline-light" size="lg" external>Falar no WhatsApp</CTAButton>
+      <CTAButton href="#viagens" variant="outline-light" size="lg">Explorar viagens</CTAButton>
     </div>
 
     {
@@ -274,8 +271,8 @@ const tones = ['ink', 'lagoon', 'clay'] as const;
     inset: 0;
     z-index: -1;
     background:
-      linear-gradient(to top, rgb(15 31 26 / 0.78) 0%, rgb(15 31 26 / 0.3) 45%, rgb(15 31 26 / 0) 70%),
-      linear-gradient(to right, rgb(15 31 26 / 0.45) 0%, rgb(15 31 26 / 0) 60%);
+      linear-gradient(to top, rgb(15 31 26 / 0.7) 0%, rgb(15 31 26 / 0.25) 40%, rgb(15 31 26 / 0) 62%),
+      linear-gradient(to right, rgb(15 31 26 / 0.35) 0%, rgb(15 31 26 / 0) 55%);
   }
 
   /* ---------- Texto ---------- */
@@ -285,24 +282,16 @@ const tones = ['ink', 'lagoon', 'clay'] as const;
     justify-items: start;
     gap: 1.1rem;
     padding-top: 4rem;
-    padding-bottom: 1.75rem;
-  }
-
-  .hero__kicker {
-    font-size: var(--fs-xs);
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: rgb(246 241 231 / 0.9);
+    padding-bottom: clamp(2.5rem, 1.5rem + 4vw, 5.5rem);
   }
 
   .hero__title {
-    max-width: 13ch;
-    font-size: clamp(2.75rem, 1.5rem + 4.8vw, 6rem);
+    max-width: 16ch;
+    font-size: clamp(2.5rem, 1.4rem + 3.6vw, 4.75rem);
     font-weight: 800;
-    line-height: 0.95;
-    letter-spacing: -0.04em;
-    text-shadow: 0 2px 24px rgb(15 31 26 / 0.25);
+    line-height: 1;
+    letter-spacing: -0.035em;
+    text-shadow: 0 2px 24px rgb(15 31 26 / 0.35);
   }
 
   .hero__title em {
@@ -311,10 +300,11 @@ const tones = ['ink', 'lagoon', 'clay'] as const;
   }
 
   .hero__lead {
-    max-width: 34rem;
+    max-width: 36rem;
     font-size: var(--fs-lg);
     line-height: 1.5;
-    color: rgb(246 241 231 / 0.92);
+    color: var(--c-paper);
+    text-shadow: 0 1px 12px rgb(15 31 26 / 0.4);
   }
 
   .hero__actions {
@@ -417,9 +407,4 @@ const tones = ['ink', 'lagoon', 'clay'] as const;
     text-decoration-color: currentColor;
   }
 
-  @media (min-width: 64rem) {
-    .hero__content {
-      padding-bottom: 2.25rem;
-    }
-  }
 </style>

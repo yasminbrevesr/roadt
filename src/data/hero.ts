@@ -23,7 +23,13 @@ export interface HeroSlide {
 }
 
 export const heroSlides: HeroSlide[] = [
-  { photo: 'hero-1', alt: 'Grupo da RoadTrip021 reunido durante uma viagem' },
+  {
+    // Versão provisória: recorte do post "Viagens 2027" do Instagram (sem o texto da arte).
+    // A imagem original tem só 675 px de largura; troque pelo arquivo original quando possível.
+    photo: 'hero-1',
+    alt: 'Grupo da RoadTrip021 com a bandeira da marca em frente a um gêiser, com montanhas nevadas ao fundo',
+    position: 'center 42%',
+  },
   { photo: 'hero-2', alt: 'Paisagem de um destino da RoadTrip021' },
   { photo: 'hero-3', alt: 'Viajantes da RoadTrip021 em uma trilha' },
   { photo: 'hero-4', alt: 'Grupo da RoadTrip021 em um mirante' },
