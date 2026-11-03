@@ -68,6 +68,7 @@ viagens ou links, edite apenas os arquivos abaixo:
 | Diferenciais ("Por que viajar com a RoadTrip?") | `src/data/highlights.ts` |
 | Avaliações do Google | `src/data/reviews.ts` |
 | Fotos da seção Instagram | `src/data/gallery.ts` |
+| Fotos do carrossel do topo (ordem, enquadramento, legenda) | `src/data/hero.ts` |
 | Menu e links do rodapé | `src/data/navigation.ts` |
 | Cores, fontes, espaçamentos | `src/styles/tokens.css` |
 
@@ -112,7 +113,7 @@ Enquanto uma foto não existir, aparece um espaço reservado com a etiqueta
 Itens que dependem de material ou confirmação da empresa. Nenhum deles foi inventado:
 onde faltava informação verificada, o site deixa o espaço preparado.
 
-- [ ] **Fotos originais** (hero, 10 destinos, 3 fotos institucionais, 6 do Instagram) — ver lista acima.
+- [ ] **Fotos originais** (5 do carrossel do topo, 10 destinos, 3 institucionais, 6 do Instagram) — ver lista acima.
 - [ ] **Logo oficial** em `src/assets/brand/logo.svg`.
 - [ ] **Paleta de cores oficial**: as cores atuais foram definidas no redesign sem acesso ao
       manual da marca. Se houver cores oficiais, ajuste `src/styles/tokens.css`.
@@ -248,8 +249,13 @@ scripts/smoke-test.mjs       # teste automatizado
 - **Acessibilidade:** HTML semântico, link "pular para o conteúdo", foco visível,
   menu mobile em `<dialog>` (prende o foco e fecha com ESC), contraste AA verificado,
   respeito à preferência "reduzir movimento".
-- **Ícones:** SVG inline copiados de [Lucide](https://lucide.dev) (ISC) e
-  [Simple Icons](https://simpleicons.org) (CC0) — sem dependência extra.
+- **Sem setas nem ícones decorativos/emoji** (decisão de design): botões e links usam só texto.
+  Os únicos ícones são controles de interface (abrir/fechar menu e o "+" do FAQ), em SVG inline
+  copiados de [Lucide](https://lucide.dev) (ISC).
+- **Carrossel do topo:** troca de foto sozinho a cada 6 s, com indicadores clicáveis, botão
+  pausar/continuar, deslizar no celular e pausa automática ao passar o mouse; quem usa
+  "reduzir movimento" no sistema começa com ele pausado. Só a primeira foto carrega com
+  prioridade.
 - **Instagram:** galeria estática com link para o perfil (não há integração com a API).
 - **Preços:** não ficam fixos no código porque mudam e apareciam divergentes entre páginas da
   loja; o valor real é exibido na página de compra. É possível exibir um preço confirmado

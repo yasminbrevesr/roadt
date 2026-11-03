@@ -1,172 +1,303 @@
 ---
+/**
+ * Topo da página: carrossel de fotos em tela cheia com chamada principal.
+ * - As fotos trocam sozinhas (com transição suave) e podem ser escolhidas pelos indicadores.
+ * - Pausa ao passar o mouse, ao navegar por teclado dentro dele, com a aba em segundo
+ *   plano e pelo botão "Pausar". Quem prefere menos movimento começa com ele pausado.
+ * - No celular, dá para deslizar o dedo para trocar de foto.
+ * - Só a primeira foto carrega com prioridade; as demais carregam depois da página.
+ */
 import Photo from '@/components/ui/Photo.astro';
 import CTAButton from '@/components/ui/CTAButton.astro';
-import Icon from '@/components/ui/Icon.astro';
-import type { Departure } from '@/data/departures';
-import { site } from '@/config/site';
-import { formatRange } from '@/lib/dates';
-import { storeLink, whatsappLink } from '@/lib/links';
+import { heroSlides, HERO_INTERVAL_MS } from '@/data/hero';
+import { whatsappLink } from '@/lib/links';
 
-interface Props {
-  nextDeparture?: Departure;
-}
-
-const { nextDeparture } = Astro.props;
+const total = heroSlides.length;
+const pad = (n: number) => String(n).padStart(2, '0');
+const tones = ['ink', 'lagoon', 'clay'] as const;
 ---
 
-<section class="hero on-dark" aria-labelledby="hero-title">
-  <div class="hero__media">
-    {/* PENDENTE: foto original de grupo em viagem, horizontal, mín. 2400px de largura → src/assets/photos/hero.jpg */}
-    <Photo
-      name="hero"
-      alt="Grupo da RoadTrip021 reunido durante uma viagem"
-      priority
-      sizes="100vw"
-      widths={[640, 960, 1280, 1600, 2000, 2560]}
-      tone="ink"
-      pending="compact-mobile"
-    />
+<section
+  class="hero on-dark"
+  aria-roledescription="carrossel"
+  aria-label="Fotos de viagens da RoadTrip021"
+  data-hero
+  data-interval={HERO_INTERVAL_MS}
+  style={`--hero-interval:${HERO_INTERVAL_MS}ms`}
+>
+  <div class="hero__slides" aria-live="off">
+    {
+      heroSlides.map((slide, i) => (
+        <figure
+          class:list={['hero__slide', { 'is-active': i === 0, 'is-dormant': i > 0 }]}
+          data-slide={i}
+          role="group"
+          aria-roledescription="slide"
+          aria-label={`${i + 1} de ${total}`}
+          aria-hidden={i === 0 ? 'false' : 'true'}
+        >
+          <Photo
+            name={slide.photo}
+            alt={slide.alt}
+            priority={i === 0}
+            sizes="100vw"
+            widths={[640, 960, 1280, 1600, 2000, 2560]}
+            tone={tones[i % tones.length]}
+            pending="compact-mobile"
+            position={slide.position}
+          />
+          {slide.caption && <figcaption class="hero__caption">{slide.caption}</figcaption>}
+        </figure>
+      ))
+    }
   </div>
   <div class="hero__shade" aria-hidden="true"></div>
 
-  <svg class="hero__route" viewBox="0 0 520 360" fill="none" aria-hidden="true">
-    <path
-      class="hero__route-path"
-      d="M8 340C90 300 70 230 150 210s150 40 190-30 10-120 90-140"
-      stroke="currentColor"
-      stroke-width="2.5"
-      stroke-linecap="round"
-      stroke-dasharray="2 12"></path>
-    <circle cx="430" cy="40" r="7" fill="currentColor"></circle>
-    <circle cx="430" cy="40" r="16" stroke="currentColor" stroke-width="2" opacity=".5"></circle>
-  </svg>
-
   <div class="hero__content container">
-    <p class="hero__kicker">
-      <span class="hero__dot" aria-hidden="true"></span>
-      Viagens e experiências em grupo · desde {site.since.year}
-    </p>
-    <h1 id="hero-title" class="hero__title">Sua próxima <em>história</em> começa aqui.</h1>
+    <p class="hero__kicker">Viagens e experiências em grupo</p>
+    <h1 class="hero__title">Sua próxima <em>história</em> começa aqui.</h1>
     <p class="hero__lead">
       Conheça lugares incríveis, faça novas amizades e viva experiências que vão muito além de uma viagem.
     </p>
     <div class="hero__actions">
       <CTAButton href="#viagens" size="lg">Explorar viagens</CTAButton>
-      <CTAButton
-        href={whatsappLink()}
-        variant="outline-light"
-        size="lg"
-        icon="whatsapp"
-        trailingIcon={null}
-        external
-      >
-        Falar no WhatsApp
-      </CTAButton>
+      <CTAButton href={whatsappLink()} variant="outline-light" size="lg" external>Falar no WhatsApp</CTAButton>
     </div>
 
     {
-      nextDeparture && (
-        <a class="hero__next" href={storeLink(nextDeparture.url)} data-start={nextDeparture.start}>
-          <span class="hero__next-label">Próxima saída</span>
-          <span class="hero__next-title">{nextDeparture.title}</span>
-          <span class="hero__next-date">
-            <Icon name="calendar" size={16} />
-            {formatRange(nextDeparture.start, nextDeparture.end)}
-          </span>
-          <span class="hero__next-arrow" aria-hidden="true">
-            <Icon name="arrow-up-right" size={20} />
-          </span>
-        </a>
+      total > 1 && (
+        <div class="hero__controls" data-hero-controls hidden>
+          <div class="hero__dots" role="group" aria-label="Escolher foto">
+            {heroSlides.map((_, i) => (
+              <button
+                type="button"
+                class="hero__dot"
+                aria-label={`Mostrar foto ${i + 1} de ${total}`}
+                aria-current={i === 0 ? 'true' : undefined}
+                data-go={i}
+              >
+                <span class="hero__dot-bar">
+                  <span class="hero__dot-fill" />
+                </span>
+              </button>
+            ))}
+          </div>
+          <p class="hero__count" aria-hidden="true">
+            <span data-hero-current>01</span> / {pad(total)}
+          </p>
+          <button type="button" class="hero__pause" aria-pressed="false" data-hero-pause>
+            Pausar
+          </button>
+        </div>
       )
     }
   </div>
 </section>
+
+<script>
+  function initHero(root: HTMLElement) {
+    const slides = Array.from(root.querySelectorAll<HTMLElement>('[data-slide]'));
+    const controls = root.querySelector<HTMLElement>('[data-hero-controls]');
+    if (slides.length < 2 || !controls) return;
+
+    const dots = Array.from(controls.querySelectorAll<HTMLButtonElement>('[data-go]'));
+    const pauseBtn = controls.querySelector<HTMLButtonElement>('[data-hero-pause]');
+    const counter = controls.querySelector<HTMLElement>('[data-hero-current]');
+    const interval = Number(root.dataset.interval) || 6000;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const holds = new Set<string>(); // motivos de pausa temporária (mouse, foco, aba oculta)
+    let userPaused = reduceMotion;
+    let index = 0;
+    let timer: number | undefined;
+
+    const running = () => !userPaused && holds.size === 0;
+
+    function schedule() {
+      window.clearTimeout(timer);
+      root.classList.remove('is-ticking');
+      void root.offsetWidth; // reinicia a animação da barra de progresso
+      if (running()) {
+        root.classList.add('is-ticking');
+        timer = window.setTimeout(() => show(index + 1), interval);
+      }
+    }
+
+    function show(next: number) {
+      const target = (next + slides.length) % slides.length;
+      if (target !== index) {
+        slides[index]?.classList.remove('is-active');
+        slides[index]?.setAttribute('aria-hidden', 'true');
+        index = target;
+        slides[index]?.classList.add('is-active');
+        slides[index]?.setAttribute('aria-hidden', 'false');
+        dots.forEach((dot, i) => {
+          if (i === index) dot.setAttribute('aria-current', 'true');
+          else dot.removeAttribute('aria-current');
+        });
+        if (counter) counter.textContent = String(index + 1).padStart(2, '0');
+      }
+      schedule();
+    }
+
+    function hold(reason: string, active: boolean) {
+      if (active) holds.add(reason);
+      else holds.delete(reason);
+      schedule();
+    }
+
+    dots.forEach((dot, i) => dot.addEventListener('click', () => show(i)));
+
+    pauseBtn?.addEventListener('click', () => {
+      userPaused = !userPaused;
+      pauseBtn.setAttribute('aria-pressed', String(userPaused));
+      pauseBtn.textContent = userPaused ? 'Continuar' : 'Pausar';
+      schedule();
+    });
+    if (pauseBtn && userPaused) {
+      pauseBtn.setAttribute('aria-pressed', 'true');
+      pauseBtn.textContent = 'Continuar';
+    }
+
+    if (window.matchMedia('(hover: hover)').matches) {
+      root.addEventListener('mouseenter', () => hold('hover', true));
+      root.addEventListener('mouseleave', () => hold('hover', false));
+    }
+    root.addEventListener('focusin', () => hold('focus', true));
+    root.addEventListener('focusout', (event) => {
+      if (!root.contains(event.relatedTarget as Node | null)) hold('focus', false);
+    });
+    document.addEventListener('visibilitychange', () => hold('hidden', document.hidden));
+
+    // Deslizar o dedo (celular/tablet)
+    let startX = 0;
+    let startY = 0;
+    root.addEventListener('pointerdown', (event) => {
+      if (event.pointerType === 'mouse') return;
+      startX = event.clientX;
+      startY = event.clientY;
+    });
+    root.addEventListener('pointerup', (event) => {
+      if (event.pointerType === 'mouse') return;
+      const dx = event.clientX - startX;
+      const dy = event.clientY - startY;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) show(index + (dx < 0 ? 1 : -1));
+    });
+
+    // As demais fotos só começam a carregar depois da página pronta (não atrasa a primeira).
+    const activate = () => {
+      slides.forEach((slide) => slide.classList.remove('is-dormant'));
+      controls.hidden = false;
+      schedule();
+    };
+    if (document.readyState === 'complete') activate();
+    else window.addEventListener('load', activate, { once: true });
+  }
+
+  const hero = document.querySelector<HTMLElement>('[data-hero]');
+  if (hero) initHero(hero);
+</script>
 
 <style>
   .hero {
     position: relative;
     isolation: isolate;
     display: grid;
-    min-height: max(38rem, min(100svh, 62rem));
+    min-height: max(34rem, min(calc(100svh - var(--header-h)), 52rem));
     overflow: hidden;
     background: var(--c-ink);
     color: var(--c-paper);
+    touch-action: pan-y;
   }
 
-  .hero__media {
+  /* ---------- Fotos ---------- */
+  .hero__slides {
     position: absolute;
     inset: 0;
     z-index: -2;
-    --pending-top: calc(var(--header-h) + 0.75rem);
+  }
+
+  .hero__slide {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: opacity 1.2s var(--ease-out);
+    --pending-top: 1rem;
     --pending-right: var(--gutter);
   }
 
-  /* Escurecimento para leitura do texto sobre a foto. */
+  .hero__slide.is-active {
+    opacity: 1;
+  }
+
+  .hero__slide.is-dormant {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hero__slide :global(.photo) {
+      transform: scale(1.06);
+      transition: transform 7s linear;
+    }
+
+    .hero__slide.is-active :global(.photo) {
+      transform: scale(1);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero__slide {
+      transition: none;
+    }
+  }
+
+  .hero__caption {
+    position: absolute;
+    right: var(--gutter);
+    bottom: 1.6rem;
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgb(246 241 231 / 0.85);
+  }
+
+  /* Escurecimento discreto para garantir a leitura do texto sobre qualquer foto. */
   .hero__shade {
     position: absolute;
     inset: 0;
     z-index: -1;
     background:
-      linear-gradient(to top, rgb(15 31 26 / 0.9) 0%, rgb(15 31 26 / 0.45) 45%, rgb(15 31 26 / 0.15) 75%),
-      linear-gradient(to bottom, rgb(15 31 26 / 0.5) 0%, rgb(15 31 26 / 0) 22%);
+      linear-gradient(to top, rgb(15 31 26 / 0.78) 0%, rgb(15 31 26 / 0.3) 45%, rgb(15 31 26 / 0) 70%),
+      linear-gradient(to right, rgb(15 31 26 / 0.45) 0%, rgb(15 31 26 / 0) 60%);
   }
 
-  .hero__route {
-    position: absolute;
-    top: calc(var(--header-h) + 1rem);
-    right: -6rem;
-    z-index: -1;
-    width: min(70vw, 32rem);
-    height: auto;
-    color: var(--c-sun);
-    opacity: 0.85;
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .hero__route-path {
-      animation: hero-route 2.4s linear infinite;
-    }
-
-    @keyframes hero-route {
-      to {
-        stroke-dashoffset: -28;
-      }
-    }
-  }
-
+  /* ---------- Texto ---------- */
   .hero__content {
     display: grid;
     align-content: end;
-    gap: 1.25rem;
-    padding-top: calc(var(--header-h) + 3rem);
-    padding-bottom: clamp(2.5rem, 1.5rem + 4vw, 5rem);
+    justify-items: start;
+    gap: 1.1rem;
+    padding-top: 4rem;
+    padding-bottom: 1.75rem;
   }
 
   .hero__kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
     font-size: var(--fs-xs);
     font-weight: 700;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: rgb(246 241 231 / 0.9);
   }
 
-  .hero__dot {
-    width: 0.55rem;
-    height: 0.55rem;
-    border-radius: 50%;
-    background: var(--c-sun);
-    box-shadow: 0 0 0 0.3rem rgb(255 91 36 / 0.25);
-  }
-
   .hero__title {
-    max-width: 11ch;
-    font-size: var(--fs-display);
+    max-width: 13ch;
+    font-size: clamp(2.75rem, 1.5rem + 4.8vw, 6rem);
     font-weight: 800;
-    line-height: 0.92;
-    letter-spacing: -0.045em;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    text-shadow: 0 2px 24px rgb(15 31 26 / 0.25);
   }
 
   .hero__title em {
@@ -178,7 +309,7 @@ const { nextDeparture } = Astro.props;
     max-width: 34rem;
     font-size: var(--fs-lg);
     line-height: 1.5;
-    color: rgb(246 241 231 / 0.88);
+    color: rgb(246 241 231 / 0.92);
   }
 
   .hero__actions {
@@ -188,85 +319,102 @@ const { nextDeparture } = Astro.props;
     margin-top: 0.5rem;
   }
 
-  .hero__next {
-    position: relative;
-    display: grid;
-    gap: 0.2rem;
-    margin-top: 1.25rem;
-    padding: 1rem 3.75rem 1rem 1.1rem;
-    border-radius: var(--radius);
-    background: var(--c-paper);
-    color: var(--c-ink);
-    text-decoration: none;
-    transition: transform var(--dur) var(--ease-out);
+  /* ---------- Controles ---------- */
+  .hero__controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    margin-top: clamp(1.5rem, 1rem + 2vw, 3rem);
   }
 
-  .hero__next-label {
-    font-size: 0.75rem;
+  .hero__dots {
+    display: flex;
+    flex: 1;
+    gap: 0.4rem;
+    max-width: 20rem;
+  }
+
+  .hero__dot {
+    flex: 1;
+    min-width: 1.5rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .hero__dot-bar {
+    position: relative;
+    display: block;
+    height: 3px;
+    overflow: hidden;
+    border-radius: 3px;
+    background: rgb(246 241 231 / 0.35);
+  }
+
+  .hero__dot-fill {
+    position: absolute;
+    inset: 0;
+    background: var(--c-paper);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  .hero__dot[aria-current='true'] .hero__dot-fill {
+    transform: scaleX(1);
+  }
+
+  .hero.is-ticking .hero__dot[aria-current='true'] .hero__dot-fill {
+    animation: hero-fill var(--hero-interval) linear both;
+  }
+
+  @keyframes hero-fill {
+    from {
+      transform: scaleX(0);
+    }
+
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  .hero__dot:hover .hero__dot-bar {
+    background: rgb(246 241 231 / 0.6);
+  }
+
+  .hero__count {
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    font-variant-numeric: tabular-nums;
+    color: rgb(246 241 231 / 0.85);
+  }
+
+  .hero__pause {
+    min-height: 2.75rem;
+    margin-left: auto;
+    padding: 0 0.25rem;
+    border: 0;
+    background: transparent;
+    color: var(--c-paper);
+    font-size: var(--fs-xs);
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--c-sun-deep);
+    text-decoration: underline;
+    text-decoration-color: rgb(246 241 231 / 0.4);
+    text-underline-offset: 0.3em;
   }
 
-  .hero__next-title {
-    font-family: var(--font-display);
-    font-size: 1.25rem;
-    font-weight: 700;
-    line-height: 1.15;
-    letter-spacing: -0.02em;
-  }
-
-  .hero__next-date {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: var(--fs-sm);
-    font-weight: 600;
-    color: var(--c-muted);
-  }
-
-  .hero__next-arrow {
-    position: absolute;
-    top: 50%;
-    right: 1rem;
-    display: grid;
-    place-items: center;
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 50%;
-    background: var(--c-sun);
-    transform: translateY(-50%);
-    transition: transform var(--dur) var(--ease-out);
-  }
-
-  @media (hover: hover) {
-    .hero__next:hover .hero__next-arrow {
-      transform: translateY(-50%) rotate(45deg);
-    }
+  .hero__pause:hover {
+    text-decoration-color: currentColor;
   }
 
   @media (min-width: 64rem) {
     .hero__content {
-      grid-template-columns: minmax(0, 1fr) auto;
-      column-gap: 3rem;
-    }
-
-    .hero__content > :not(.hero__next) {
-      grid-column: 1;
-    }
-
-    .hero__next {
-      grid-column: 2;
-      grid-row: 3 / span 2;
-      align-self: end;
-      width: 21rem;
-      margin-top: 0;
-    }
-
-    .hero__route {
-      right: 4%;
-      width: min(34rem, 42vw);
+      padding-bottom: 2.25rem;
     }
   }
 </style>

@@ -1,9 +1,8 @@
 ---
 /**
- * Cabeçalho fixo.
- * - Sobre o hero (overlay = true) começa transparente e fica sólido ao rolar.
- * - No mobile, o menu abre em um <dialog> nativo: prende o foco, fecha com ESC
- *   e bloqueia a interação com o restante da página.
+ * Cabeçalho fixo no topo, com fundo sólido (ganha uma sombra leve ao rolar).
+ * No mobile, o menu abre em um <dialog> nativo: prende o foco, fecha com ESC
+ * e bloqueia a interação com o restante da página.
  */
 import Logo from '@/components/ui/Logo.astro';
 import Icon from '@/components/ui/Icon.astro';
@@ -12,17 +11,11 @@ import { mainNav } from '@/data/navigation';
 import { site, storePaths } from '@/config/site';
 import { storeLink, whatsappLink, withBase } from '@/lib/links';
 
-interface Props {
-  /** true quando o cabeçalho fica sobre uma imagem escura (hero). */
-  overlay?: boolean;
-}
-
-const { overlay = false } = Astro.props;
 const allTrips = storeLink(storePaths.allTrips);
 const home = withBase('/');
 ---
 
-<header class:list={['site-header', { 'is-overlay': overlay }]} data-header>
+<header class="site-header" data-header>
   <div class="site-header__inner container">
     <a href={home} class="site-header__brand" aria-label={`${site.name} — página inicial`}>
       <Logo />
@@ -41,7 +34,7 @@ const home = withBase('/');
     </nav>
 
     <div class="site-header__actions">
-      <CTAButton href={allTrips} class="site-header__cta" trailingIcon="arrow-up-right">Encontrar viagens</CTAButton>
+      <CTAButton href={allTrips} class="site-header__cta">Encontrar viagens</CTAButton>
       <button
         type="button"
         class="site-header__toggle"
@@ -84,13 +77,12 @@ const home = withBase('/');
   </nav>
 
   <div class="mmenu__bottom container">
-    <CTAButton href={allTrips} size="lg" block trailingIcon="arrow-up-right">Encontrar viagens</CTAButton>
-    <CTAButton href={whatsappLink()} variant="outline-light" size="lg" block icon="whatsapp" trailingIcon={null} external>
+    <CTAButton href={allTrips} size="lg" block>Encontrar viagens</CTAButton>
+    <CTAButton href={whatsappLink()} variant="outline-light" size="lg" block external>
       Falar no WhatsApp
     </CTAButton>
     <a class="mmenu__social" href={site.instagram.url} target="_blank" rel="noopener noreferrer">
-      <Icon name="instagram" size={18} />
-      @{site.instagram.handle}
+      Instagram @{site.instagram.handle}
       <span class="visually-hidden"> (abre em nova aba)</span>
     </a>
   </div>
@@ -102,7 +94,7 @@ const home = withBase('/');
   const openBtn = document.querySelector<HTMLButtonElement>('[data-menu-open]');
   const closeBtn = menu?.querySelector<HTMLButtonElement>('[data-menu-close]');
 
-  // Estado "rolado": fundo sólido quando a página sai do topo.
+  // Estado "rolado": sombra leve quando a página sai do topo.
   if (header) {
     const sentinel = document.createElement('div');
     sentinel.setAttribute('aria-hidden', 'true');
@@ -149,31 +141,18 @@ const home = withBase('/');
 
 <style>
   .site-header {
-    position: fixed;
-    inset: 0 0 auto;
+    position: sticky;
+    top: 0;
     z-index: 50;
     height: var(--header-h);
     color: var(--c-ink);
-    background: rgb(246 241 231 / 0.92);
+    background: var(--c-paper);
     border-bottom: 1px solid var(--c-line);
-    backdrop-filter: saturate(1.4) blur(12px);
-    -webkit-backdrop-filter: saturate(1.4) blur(12px);
-    transition:
-      background-color var(--dur) var(--ease-out),
-      color var(--dur) var(--ease-out),
-      border-color var(--dur) var(--ease-out);
+    transition: box-shadow var(--dur) var(--ease-out);
   }
 
-  .site-header.is-overlay:not(.is-scrolled) {
-    color: var(--c-paper);
-    background: transparent;
-    border-bottom-color: transparent;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-
-  .site-header.is-overlay:not(.is-scrolled) :focus-visible {
-    outline-color: var(--c-gold);
+  .site-header.is-scrolled {
+    box-shadow: 0 8px 24px -16px rgb(15 31 26 / 0.45);
   }
 
   .site-header__inner {
@@ -208,8 +187,10 @@ const home = withBase('/');
     align-items: center;
     min-height: 2.75rem;
     padding: 0 0.85rem;
-    font-weight: 600;
-    font-size: 0.975rem;
+    font-weight: 800;
+    font-size: 0.875rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
     text-decoration: none;
   }
 
@@ -219,7 +200,7 @@ const home = withBase('/');
     left: 0.85rem;
     right: 0.85rem;
     bottom: 0.45rem;
-    border-top: 2px dashed currentColor;
+    border-top: 2px solid var(--c-sun);
     transform: scaleX(0);
     transform-origin: left;
     transition: transform var(--dur) var(--ease-out);
@@ -353,7 +334,6 @@ const home = withBase('/');
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
     min-height: 3rem;
     font-weight: 600;
     color: var(--c-muted-dark);

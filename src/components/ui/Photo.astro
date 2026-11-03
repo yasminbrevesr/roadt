@@ -11,7 +11,6 @@
 import { Picture } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import { site } from '@/config/site';
-import Icon from './Icon.astro';
 
 type Tone = 'ink' | 'lagoon' | 'clay';
 
@@ -29,6 +28,8 @@ interface Props {
    * ou 'compact-mobile' (só ícone em telas pequenas).
    */
   pending?: 'full' | 'compact' | 'compact-mobile';
+  /** Enquadramento quando a foto é cortada (CSS object-position), ex.: 'center 30%'. */
+  position?: string;
   class?: string;
 }
 
@@ -40,6 +41,7 @@ const {
   priority = false,
   tone,
   pending = 'full',
+  position,
   class: className,
 } = Astro.props;
 
@@ -55,8 +57,10 @@ const image = Object.entries(photos).find(([path]) => {
 const tones: Tone[] = ['ink', 'lagoon', 'clay'];
 const autoTone = tones[[...name].reduce((acc, ch) => acc + ch.charCodeAt(0), 0) % tones.length];
 const placeholderTone = tone ?? autoTone;
-const usableWidths = image ? widths.filter((w) => w <= image.width) : [];
-if (image && usableWidths.length === 0) usableWidths.push(image.width);
+// Nunca amplia a foto além do tamanho original; se ela for menor que o maior tamanho
+// pedido (ex.: fotos de 1080 px do Instagram), inclui a largura original como opção.
+const usableWidths = image ? widths.filter((w) => w < image.width) : [];
+if (image && widths.some((w) => w >= image.width)) usableWidths.push(image.width);
 ---
 
 {
@@ -71,6 +75,7 @@ if (image && usableWidths.length === 0) usableWidths.push(image.width);
       decoding={priority ? 'sync' : 'async'}
       fetchpriority={priority ? 'high' : 'auto'}
       class="photo__img"
+      style={position ? `object-position: ${position}` : undefined}
       pictureAttributes={{ class: ['photo', className].filter(Boolean).join(' ') }}
     />
   ) : (
@@ -84,8 +89,8 @@ if (image && usableWidths.length === 0) usableWidths.push(image.width);
       {site.showPendingMarkers && (
         <span class="photo__pending" data-mode={pending} title={`Foto pendente: src/assets/photos/${name}.jpg`} aria-hidden="true">
           <span class="photo__pending-title">
-            <Icon name="camera" size={14} />
             <span class="photo__pending-text">Foto pendente</span>
+            <span class="photo__pending-short">Foto</span>
           </span>
           <span class="photo__pending-file">{name}.jpg</span>
         </span>
@@ -143,10 +148,11 @@ if (image && usableWidths.length === 0) usableWidths.push(image.width);
   }
 
   .photo__pending-title {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
     font-weight: 700;
+  }
+
+  .photo__pending-short {
+    display: none;
   }
 
   .photo__pending-file {
@@ -155,13 +161,10 @@ if (image && usableWidths.length === 0) usableWidths.push(image.width);
     overflow-wrap: anywhere;
   }
 
-  /* Versão compacta (apenas o ícone) para espaços pequenos */
+  /* Versão compacta (só a palavra "Foto") para espaços pequenos */
   .photo__pending[data-mode='compact'] {
-    place-items: center;
-    width: 2rem;
-    height: 2rem;
-    padding: 0;
-    border-radius: 50%;
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--radius-pill);
   }
 
   .photo__pending[data-mode='compact'] .photo__pending-text,
@@ -169,18 +172,23 @@ if (image && usableWidths.length === 0) usableWidths.push(image.width);
     display: none;
   }
 
+  .photo__pending[data-mode='compact'] .photo__pending-short {
+    display: inline;
+  }
+
   @media (max-width: 40rem) {
     .photo__pending[data-mode='compact-mobile'] {
-      place-items: center;
-      width: 2rem;
-      height: 2rem;
-      padding: 0;
-      border-radius: 50%;
+      padding: 0.2rem 0.55rem;
+      border-radius: var(--radius-pill);
     }
 
     .photo__pending[data-mode='compact-mobile'] .photo__pending-text,
     .photo__pending[data-mode='compact-mobile'] .photo__pending-file {
       display: none;
+    }
+
+    .photo__pending[data-mode='compact-mobile'] .photo__pending-short {
+      display: inline;
     }
   }
 </style>

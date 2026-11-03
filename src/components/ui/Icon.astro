@@ -1,5 +1,5 @@
 ---
-import { brandIcons, strokeIcons, type IconName } from './icons';
+import { strokeIcons, type IconName } from './icons';
 
 interface Props {
   name: IconName;
@@ -11,40 +11,23 @@ interface Props {
 }
 
 const { name, size = 20, label, class: className, strokeWidth = 2 } = Astro.props;
-const isBrand = name in brandIcons;
 const a11y = label ? { role: 'img' as const, 'aria-label': label } : { 'aria-hidden': 'true' as const };
 ---
 
-{
-  isBrand ? (
-    <svg
-      class:list={['icon', className]}
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      focusable="false"
-      {...a11y}
-    >
-      <path d={brandIcons[name as keyof typeof brandIcons]} />
-    </svg>
-  ) : (
-    <svg
-      class:list={['icon', className]}
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width={strokeWidth}
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      focusable="false"
-      {...a11y}
-      set:html={strokeIcons[name as keyof typeof strokeIcons]}
-    />
-  )
-}
+<svg
+  class:list={['icon', className]}
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width={strokeWidth}
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  focusable="false"
+  {...a11y}
+  set:html={strokeIcons[name]}
+/>
 
 <style>
   .icon {

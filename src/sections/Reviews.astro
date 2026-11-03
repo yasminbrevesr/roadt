@@ -9,7 +9,6 @@ import SectionTitle from '@/components/ui/SectionTitle.astro';
 import TestimonialCard from '@/components/cards/TestimonialCard.astro';
 import CTAButton from '@/components/ui/CTAButton.astro';
 import PendingNote from '@/components/ui/PendingNote.astro';
-import Icon from '@/components/ui/Icon.astro';
 import { reviews } from '@/data/reviews';
 
 interface Props {
@@ -35,18 +34,12 @@ const rating = reviews.averageRating;
         hasReviews && rating !== null && (
           <div class="reviews__summary" data-reveal>
             <p class="reviews__score">
+              <span class="visually-hidden">Nota média </span>
               <span class="reviews__number">{rating.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
-              <span class="reviews__stars" role="img" aria-label={`Nota média ${rating} de 5`}>
-                {Array.from({ length: 5 }, (_, i) => (
-                  <Icon name="star" size={18} class={i < Math.round(rating) ? 'is-on' : 'is-off'} />
-                ))}
-              </span>
+              <span class="reviews__of">de 5</span>
             </p>
             {reviews.totalReviews !== null && (
-              <p class="reviews__count">
-                <Icon name="google" size={16} />
-                {reviews.totalReviews} avaliações no {reviews.sourceName}
-              </p>
+              <p class="reviews__count">{reviews.totalReviews} avaliações no {reviews.sourceName}</p>
             )}
           </div>
         )
@@ -65,7 +58,7 @@ const rating = reviews.averageRating;
           </ul>
           {reviews.sourceUrl && (
             <div class="reviews__more">
-              <CTAButton href={reviews.sourceUrl} variant="outline" icon="google" trailingIcon="arrow-up-right" external>
+              <CTAButton href={reviews.sourceUrl} variant="outline" external>
                 Ver todas as avaliações
               </CTAButton>
             </div>
@@ -120,19 +113,12 @@ const rating = reviews.averageRating;
     letter-spacing: -0.04em;
   }
 
-  .reviews__stars {
-    display: flex;
-    color: var(--c-sun);
-  }
-
-  .reviews__stars :global(.is-on) {
-    fill: currentColor;
+  .reviews__of {
+    font-weight: 600;
+    color: var(--c-muted);
   }
 
   .reviews__count {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
     font-size: var(--fs-sm);
     color: var(--c-muted);
   }

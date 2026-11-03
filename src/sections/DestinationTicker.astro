@@ -16,9 +16,7 @@ const names = destinations.map((d) => d.name);
           {names.map((name) => (
             <li>
               <span>{name}</span>
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-                <path d="M12 0l2.6 8.4L23 12l-8.4 2.6L12 24l-2.6-8.4L1 12l8.4-2.6z" />
-              </svg>
+              <span class="ticker__sep" />
             </li>
           ))}
         </ul>
@@ -45,6 +43,11 @@ const names = destinations.map((d) => d.name);
     flex: none;
     padding: 0;
     list-style: none;
+  }
+
+  .ticker__sep {
+    width: 2.5rem;
+    border-top: 3px solid currentColor;
   }
 
   .ticker__list li {

@@ -2,7 +2,6 @@
 /**
  * Card de avaliação. Use somente com avaliações reais (ver src/data/reviews.ts).
  */
-import Icon from '@/components/ui/Icon.astro';
 import type { Review } from '@/data/reviews';
 
 interface Props {
@@ -14,9 +13,9 @@ const rating = Math.max(0, Math.min(5, Math.round(review.rating)));
 ---
 
 <figure class="tst">
-  <div class="tst__stars" role="img" aria-label={`Nota ${rating} de 5`}>
-    {Array.from({ length: 5 }, (_, i) => <Icon name="star" size={18} class={i < rating ? 'is-on' : 'is-off'} />)}
-  </div>
+  <p class="tst__rating">
+    <span class="visually-hidden">Nota </span><strong>{rating}</strong>/5
+  </p>
   <blockquote class="tst__text">
     <p>{review.text}</p>
   </blockquote>
@@ -41,18 +40,16 @@ const rating = Math.max(0, Math.min(5, Math.round(review.rating)));
     background: #fffdf8;
   }
 
-  .tst__stars {
-    display: flex;
-    gap: 0.15rem;
-    color: var(--c-sun);
+  .tst__rating {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--c-muted);
   }
 
-  .tst__stars :global(.is-on) {
-    fill: currentColor;
-  }
-
-  .tst__stars :global(.is-off) {
-    color: var(--c-sand-2);
+  .tst__rating strong {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--c-sun-deep);
   }
 
   .tst__text {

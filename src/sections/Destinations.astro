@@ -1,7 +1,6 @@
 ---
 import SectionTitle from '@/components/ui/SectionTitle.astro';
 import TravelCard from '@/components/cards/TravelCard.astro';
-import Icon from '@/components/ui/Icon.astro';
 import { destinations } from '@/data/destinations';
 import type { Departure } from '@/data/departures';
 import { storeShortcuts } from '@/data/navigation';
@@ -64,7 +63,6 @@ const nextFor = (slug: string) => upcoming.find((d) => d.destination === slug);
             <li>
               <a class="chip" href={item.href}>
                 {item.label}
-                <Icon name="arrow-up-right" size={14} />
               </a>
             </li>
           ))
@@ -238,7 +236,6 @@ const nextFor = (slug: string) => upcoming.find((d) => d.destination === slug);
   .chip {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
     min-height: 2.75rem;
     padding: 0.5rem 1rem;
     border-radius: var(--radius-pill);

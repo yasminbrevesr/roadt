@@ -3,7 +3,6 @@ import SectionTitle from '@/components/ui/SectionTitle.astro';
 import FAQAccordion from '@/components/FAQAccordion.astro';
 import CTAButton from '@/components/ui/CTAButton.astro';
 import { faq } from '@/data/faq';
-import { site } from '@/config/site';
 import { whatsappLink } from '@/lib/links';
 
 interface Props {
@@ -25,8 +24,8 @@ const { index } = Astro.props;
       />
       <div class="faq-section__help" data-reveal>
         <p>Não encontrou o que procurava?</p>
-        <CTAButton href={whatsappLink('Olá! Tenho uma dúvida sobre as viagens da RoadTrip021.')} variant="dark" icon="whatsapp" trailingIcon={null} external>
-          Fale no WhatsApp {site.whatsapp.display}
+        <CTAButton href={whatsappLink('Olá! Tenho uma dúvida sobre as viagens da RoadTrip021.')} variant="dark" external>
+          Falar no WhatsApp
         </CTAButton>
       </div>
     </div>

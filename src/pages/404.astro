@@ -12,8 +12,8 @@ import { storeLink, withBase } from '@/lib/links';
       <h1 class="nf__title">Essa rota não existe.</h1>
       <p class="lead">A página que você procura mudou de lugar ou nunca existiu. Que tal escolher um novo destino?</p>
       <div class="nf__actions">
-        <CTAButton href={withBase('/')} size="lg" trailingIcon={null}>Voltar ao início</CTAButton>
-        <CTAButton href={storeLink(storePaths.allTrips)} variant="outline" size="lg" trailingIcon="arrow-up-right">
+        <CTAButton href={withBase('/')} size="lg">Voltar ao início</CTAButton>
+        <CTAButton href={storeLink(storePaths.allTrips)} variant="outline" size="lg">
           Ver viagens
         </CTAButton>
       </div>
@@ -25,7 +25,7 @@ import { storeLink, withBase } from '@/lib/links';
   .nf {
     display: grid;
     min-height: 80svh;
-    padding-block: calc(var(--header-h) + 4rem) 5rem;
+    padding-block: 4rem 5rem;
   }
 
   .nf__inner {

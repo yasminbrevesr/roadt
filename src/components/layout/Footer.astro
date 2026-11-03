@@ -1,28 +1,37 @@
 ---
+/**
+ * Rodapé: chamada final, marca, navegação, atendimento e informações legais.
+ * Somente texto (sem ícones). Dados legais aparecem quando preenchidos em src/config/site.ts.
+ */
 import Logo from '@/components/ui/Logo.astro';
-import Icon from '@/components/ui/Icon.astro';
 import { legalLinks, mainNav, storeShortcuts } from '@/data/navigation';
 import { site } from '@/config/site';
 import { whatsappLink, withBase } from '@/lib/links';
 
 const year = new Date().getFullYear();
 const { companyName, cnpj, address } = site.legal;
+const hasLegal = Boolean(companyName || cnpj || address);
 ---
 
 <footer class="site-footer on-dark" aria-labelledby="footer-title">
   <h2 id="footer-title" class="visually-hidden">Rodapé</h2>
+
   <div class="container">
-    <div class="site-footer__top">
-      <a href={withBase('/')} class="site-footer__brand" aria-label={`${site.name} — página inicial`}>
-        <Logo />
-      </a>
-      <p class="site-footer__tagline">{site.tagline}</p>
-      <p class="site-footer__mission">{site.mission}</p>
+    <div class="sf-cta">
+      <p class="sf-cta__title">{site.tagline}</p>
     </div>
 
-    <div class="site-footer__cols">
-      <nav aria-labelledby="footer-nav">
-        <h3 id="footer-nav" class="site-footer__heading">Navegação</h3>
+    <div class="sf-grid">
+      <div class="sf-brand">
+        <a href={withBase('/')} class="sf-brand__logo" aria-label={`${site.name} — página inicial`}>
+          <Logo />
+        </a>
+        <p class="sf-brand__text">{site.mission}</p>
+        <p class="sf-brand__meta">{site.homeBase} · desde {site.since.year}</p>
+      </div>
+
+      <nav class="sf-col" aria-labelledby="sf-nav">
+        <h3 id="sf-nav" class="sf-col__title">Navegação</h3>
         <ul>
           {
             mainNav.map((item) => (
@@ -34,8 +43,8 @@ const { companyName, cnpj, address } = site.legal;
         </ul>
       </nav>
 
-      <nav aria-labelledby="footer-trips">
-        <h3 id="footer-trips" class="site-footer__heading">Viagens</h3>
+      <nav class="sf-col" aria-labelledby="sf-trips">
+        <h3 id="sf-trips" class="sf-col__title">Viagens</h3>
         <ul>
           {
             storeShortcuts.map((item) => (
@@ -47,154 +56,242 @@ const { companyName, cnpj, address } = site.legal;
         </ul>
       </nav>
 
-      <div>
-        <h3 class="site-footer__heading">Fale com a gente</h3>
-        <ul>
-          <li>
-            <a href={whatsappLink()} target="_blank" rel="noopener noreferrer" class="site-footer__contact">
-              <Icon name="whatsapp" size={18} />
-              <span>
-                WhatsApp {site.whatsapp.display}
-                <span class="site-footer__hint">canal oficial de atendimento</span>
-              </span>
-              <span class="visually-hidden"> (abre em nova aba)</span>
-            </a>
-          </li>
-          <li>
-            <a href={site.instagram.url} target="_blank" rel="noopener noreferrer" class="site-footer__contact">
-              <Icon name="instagram" size={18} />
-              <span>@{site.instagram.handle}</span>
-              <span class="visually-hidden"> (abre em nova aba)</span>
-            </a>
-          </li>
-        </ul>
+      <div class="sf-col sf-contact">
+        <h3 class="sf-col__title">Atendimento</h3>
+        <dl>
+          <div>
+            <dt>WhatsApp oficial</dt>
+            <dd>
+              <a href={whatsappLink()} target="_blank" rel="noopener noreferrer">
+                {site.whatsapp.display}
+                <span class="visually-hidden"> (abre em nova aba)</span>
+              </a>
+            </dd>
+          </div>
+          <div>
+            <dt>Instagram</dt>
+            <dd>
+              <a href={site.instagram.url} target="_blank" rel="noopener noreferrer">
+                @{site.instagram.handle}
+                <span class="visually-hidden"> (abre em nova aba)</span>
+              </a>
+            </dd>
+          </div>
+        </dl>
+        <p class="sf-contact__note">Dúvidas e solicitações são atendidas somente pelo canal oficial.</p>
       </div>
-
-      <nav aria-labelledby="footer-legal">
-        <h3 id="footer-legal" class="site-footer__heading">Institucional</h3>
-        <ul>
-          {
-            legalLinks.map((item) => (
-              <li>
-                <a href={item.href}>{item.label}</a>
-              </li>
-            ))
-          }
-        </ul>
-      </nav>
     </div>
+  </div>
 
-    <div class="site-footer__bottom">
-      <p>
-        © {year} {site.name}. Todos os direitos reservados.
-      </p>
+  {/* Marca decorativa desenhada via CSS (::before), fora da leitura de tela. */}
+  <div class="sf-wordmark" aria-hidden="true"></div>
+
+  <div class="container sf-bottom">
+    <div class="sf-bottom__info">
+      <p>© {year} {site.name}. Todos os direitos reservados.</p>
+      {hasLegal && <p>{[companyName, cnpj && `CNPJ ${cnpj}`, address].filter(Boolean).join(' · ')}</p>}
+    </div>
+    <ul class="sf-bottom__links">
       {
-        (companyName || cnpj || address) && (
-          <p class="site-footer__legal">{[companyName, cnpj && `CNPJ ${cnpj}`, address].filter(Boolean).join(' · ')}</p>
-        )
+        legalLinks.map((item) => (
+          <li>
+            <a href={item.href}>{item.label}</a>
+          </li>
+        ))
       }
-    </div>
+      <li>
+        <a href="#conteudo">Voltar ao topo</a>
+      </li>
+    </ul>
   </div>
 </footer>
 
 <style>
   .site-footer {
-    padding-block: clamp(3.5rem, 2.5rem + 4vw, 6rem) 2rem;
+    overflow: hidden;
+    padding-top: clamp(3.5rem, 2.5rem + 4vw, 6rem);
     background: var(--c-ink);
     color: var(--c-paper);
   }
 
-  .site-footer__top {
+  .site-footer a:not(.btn) {
+    text-decoration: none;
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .site-footer a:not(.btn):hover {
+    color: var(--c-sun);
+  }
+
+  /* ---------- Chamada ---------- */
+  .sf-cta {
     display: grid;
-    gap: 1rem;
+    gap: 1.5rem;
     padding-bottom: clamp(2.5rem, 2rem + 2vw, 3.5rem);
     border-bottom: 1px solid var(--c-line-dark);
   }
 
-  .site-footer__brand {
+  .sf-cta__title {
+    max-width: 20ch;
+    color: var(--c-sun);
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 1.4rem + 2.6vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+
+  /* ---------- Colunas ---------- */
+  .sf-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2.5rem 1.5rem;
+    padding-block: clamp(2.5rem, 2rem + 2vw, 4rem);
+  }
+
+  .sf-brand,
+  .sf-contact {
+    grid-column: 1 / -1;
+  }
+
+  @media (min-width: 64rem) {
+    .sf-grid {
+      grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr));
+      gap: 2rem 3rem;
+    }
+
+    .sf-brand,
+    .sf-contact {
+      grid-column: auto;
+    }
+  }
+
+  .sf-brand {
+    display: grid;
+    align-content: start;
+    gap: 1rem;
+  }
+
+  .sf-brand__logo {
     display: inline-flex;
     justify-self: start;
-    min-height: 3rem;
     align-items: center;
-    text-decoration: none;
+    min-height: 3rem;
   }
 
-  .site-footer__brand :global(.logo) {
-    font-size: 2rem;
+  .sf-brand__logo :global(.logo) {
+    font-size: 1.875rem;
   }
 
-  .site-footer__tagline {
-    font-family: var(--font-display);
-    font-size: var(--fs-h3);
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    line-height: 1.05;
-    color: var(--c-sun);
-  }
-
-  .site-footer__mission {
-    max-width: 36rem;
+  .sf-brand__text {
+    max-width: 30rem;
     color: var(--c-muted-dark);
   }
 
-  .site-footer__cols {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr));
-    gap: 2.25rem 2rem;
-    padding-block: clamp(2.5rem, 2rem + 2vw, 3.5rem);
+  .sf-brand__meta {
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
   }
 
-  .site-footer__heading {
-    margin-bottom: 0.9rem;
+  .sf-col__title {
+    margin-bottom: 0.75rem;
     font-family: var(--font-body);
     font-size: var(--fs-xs);
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--c-muted-dark);
+    color: var(--c-sun);
   }
 
-  .site-footer ul {
+  .sf-col ul {
     display: grid;
-    gap: 0.15rem;
     padding: 0;
     list-style: none;
   }
 
-  .site-footer__cols a {
+  .sf-col li a {
     display: inline-flex;
     align-items: center;
-    min-height: 2.75rem;
-    text-decoration: none;
-    transition: color var(--dur-fast) var(--ease-out);
+    min-height: 2.5rem;
   }
 
-  .site-footer__cols a:hover {
-    color: var(--c-sun);
-  }
-
-  .site-footer__contact {
-    gap: 0.6rem;
-  }
-
-  .site-footer__contact > span:not(.visually-hidden) {
+  .sf-contact dl {
     display: grid;
-    line-height: 1.3;
+    gap: 1rem;
   }
 
-  .site-footer__hint {
-    font-size: var(--fs-xs);
+  .sf-contact dt {
+    font-size: var(--fs-sm);
     color: var(--c-muted-dark);
   }
 
-  .site-footer__bottom {
+  .sf-contact dd a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.5rem;
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .sf-contact__note {
+    margin-top: 1rem;
+    max-width: 22rem;
+    font-size: var(--fs-sm);
+    color: var(--c-muted-dark);
+  }
+
+  /* ---------- Marca em destaque ---------- */
+  .sf-wordmark::before {
+    content: 'RoadTrip021';
+  }
+
+  .sf-wordmark {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 16.5vw;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    text-align: center;
+    white-space: nowrap;
+    color: var(--c-ink-2);
+    user-select: none;
+  }
+
+  /* ---------- Barra inferior ---------- */
+  .sf-bottom {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     justify-content: space-between;
-    gap: 0.5rem 2rem;
-    padding-top: 1.75rem;
+    gap: 0.75rem 2rem;
+    padding-block: 1.5rem 2rem;
     border-top: 1px solid var(--c-line-dark);
     font-size: var(--fs-sm);
     color: var(--c-muted-dark);
+  }
+
+  .sf-bottom__info {
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .sf-bottom__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.5rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sf-bottom__links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    color: var(--c-paper);
   }
 </style>

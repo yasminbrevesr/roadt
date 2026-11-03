@@ -1,10 +1,9 @@
 ---
 /**
  * Botão de ação (sempre um link real — nunca um botão sem destino).
+ * Somente texto: o site não usa setas nem ícones decorativos nos botões.
  */
 import type { HTMLAttributes } from 'astro/types';
-import Icon from './Icon.astro';
-import type { IconName } from './icons';
 
 type Variant = 'primary' | 'outline' | 'outline-light' | 'dark' | 'light';
 
@@ -12,26 +11,13 @@ interface Props extends Omit<HTMLAttributes<'a'>, 'href'> {
   href: string;
   variant?: Variant;
   size?: 'md' | 'lg';
-  /** Ícone à esquerda do texto (ex.: whatsapp). */
-  icon?: IconName;
-  /** Ícone à direita (padrão: seta). Use `null` para nenhum. */
-  trailingIcon?: IconName | null;
   /** Abre em nova aba (links de terceiros, como WhatsApp e Instagram). */
   external?: boolean;
   block?: boolean;
 }
 
-const {
-  href,
-  variant = 'primary',
-  size = 'md',
-  icon,
-  trailingIcon = 'arrow-right',
-  external = false,
-  block = false,
-  class: className,
-  ...rest
-} = Astro.props;
+const { href, variant = 'primary', size = 'md', external = false, block = false, class: className, ...rest } =
+  Astro.props;
 
 const externalProps = external ? { target: '_blank', rel: 'noopener noreferrer' } : {};
 ---
@@ -42,9 +28,7 @@ const externalProps = external ? { target: '_blank', rel: 'noopener noreferrer' 
   {...externalProps}
   {...rest}
 >
-  {icon && <Icon name={icon} size={size === 'lg' ? 20 : 18} />}
   <span class="btn__label"><slot /></span>
-  {trailingIcon && <Icon name={trailingIcon} size={size === 'lg' ? 20 : 18} class="btn__trail" />}
   {external && <span class="visually-hidden"> (abre em nova aba)</span>}
 </a>
 
@@ -59,17 +43,17 @@ const externalProps = external ? { target: '_blank', rel: 'noopener noreferrer' 
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.6rem;
     min-height: 3rem;
-    padding: 0.75rem 1.35rem;
+    padding: 0.75rem 1.5rem;
     border: 1.5px solid var(--btn-border);
     border-radius: var(--radius-pill);
     background: var(--btn-bg);
     color: var(--btn-fg);
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 0.9375rem;
     line-height: 1.15;
-    letter-spacing: -0.005em;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     text-align: center;
     text-decoration: none;
     transition:
@@ -82,8 +66,8 @@ const externalProps = external ? { target: '_blank', rel: 'noopener noreferrer' 
 
   .btn--lg {
     min-height: 3.5rem;
-    padding: 0.9rem 1.7rem;
-    font-size: 1.0625rem;
+    padding: 0.9rem 1.9rem;
+    font-size: 1rem;
   }
 
   .btn--block {
@@ -100,16 +84,6 @@ const externalProps = external ? { target: '_blank', rel: 'noopener noreferrer' 
     transform: scale(0.98);
   }
 
-  .btn :global(.btn__trail) {
-    transition: transform var(--dur) var(--ease-out);
-  }
-
-  @media (hover: hover) {
-    .btn:hover :global(.btn__trail) {
-      transform: translateX(3px);
-    }
-  }
-
   .btn--outline {
     --btn-bg: transparent;
     --btn-fg: var(--c-ink);
@@ -121,7 +95,7 @@ const externalProps = external ? { target: '_blank', rel: 'noopener noreferrer' 
   .btn--outline-light {
     --btn-bg: transparent;
     --btn-fg: var(--c-paper);
-    --btn-border: rgb(246 241 231 / 0.55);
+    --btn-border: rgb(246 241 231 / 0.75);
     --btn-bg-hover: var(--c-paper);
     --btn-fg-hover: var(--c-ink);
   }

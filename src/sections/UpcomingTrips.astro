@@ -31,7 +31,7 @@ const allTrips = storeLink(storePaths.allTrips);
         title="Próximas <em>saídas</em>"
         lead="Escolha a data, garanta sua vaga e comece a contar os dias."
       />
-      <CTAButton href={allTrips} variant="outline-light" trailingIcon="arrow-up-right" class="upcoming__all">
+      <CTAButton href={allTrips} variant="outline-light" class="upcoming__all">
         Ver calendário completo
       </CTAButton>
     </div>
@@ -55,7 +55,7 @@ const allTrips = storeLink(storePaths.allTrips);
     {
       upcoming.length > MOBILE_LIMIT && (
         <div class="upcoming__more">
-          <CTAButton href={allTrips} variant="light" trailingIcon="arrow-up-right" block>
+          <CTAButton href={allTrips} variant="light" block>
             Ver todas as saídas
           </CTAButton>
         </div>

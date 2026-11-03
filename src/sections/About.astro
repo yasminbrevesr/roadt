@@ -75,7 +75,7 @@ const stampText = `Viagens em grupo • Desde ${site.since.year} • ${site.home
         <text>
           <textPath href="#stamp-circle" textLength="488">{stampText.toUpperCase()}</textPath>
         </text>
-        <path d="M100 74l6.5 19.5L126 100l-19.5 6.5L100 126l-6.5-19.5L74 100l19.5-6.5z" class="about__stamp-star"></path>
+        <text x="100" y="112" text-anchor="middle" class="about__stamp-code">021</text>
       </svg>
     </div>
   </div>
@@ -216,8 +216,12 @@ const stampText = `Viagens em grupo • Desde ${site.since.year} • ${site.home
     letter-spacing: 0.06em;
   }
 
-  .about__stamp-star {
+  .about__stamp .about__stamp-code {
     fill: var(--c-sun);
+    font-family: var(--font-display);
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
   }
 
   @media (prefers-reduced-motion: no-preference) {

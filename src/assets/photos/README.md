@@ -12,7 +12,7 @@ Use exatamente estes nomes (extensão `.jpg`, `.jpeg`, `.png`, `.webp` ou `.avif
 
 | Arquivo | Onde aparece | Recomendação |
 | --- | --- | --- |
-| `hero.jpg` | Topo da página (imagem principal) | Horizontal, grupo em viagem, mín. 2400 px de largura |
+| `hero-1.jpg` … `hero-5.jpg` | Carrossel do topo da página | **Horizontais**, de preferência o arquivo original, mín. 2000 px de largura |
 | `bahia.jpg` | Destino Expedição Bahia + saídas da Bahia | Vertical ou quadrada, mín. 1200 px |
 | `uyuni-atacama.jpg` | Destino Salar de Uyuni + Atacama + saídas | idem |
 | `jalapao.jpg` | Destino Expedição Jalapão | idem |
@@ -28,6 +28,11 @@ Use exatamente estes nomes (extensão `.jpg`, `.jpeg`, `.png`, `.webp` ou `.avif
 
 ## Dicas
 
+- **Fotos do Instagram:** o Instagram reduz as fotos para no máximo 1080 px de largura.
+  Funcionam, mas no topo da página (tela cheia) podem ficar levemente desfocadas em
+  telas grandes. Se tiver os arquivos originais (câmera/celular), prefira-os.
+- No carrossel, o enquadramento de cada foto pode ser ajustado em `src/data/hero.ts`
+  (campo `position`), e dá para incluir ou remover fotos editando a lista.
 - Prefira fotos reais de grupos da RoadTrip021 (pessoas + paisagem).
 - Evite fotos com texto/arte por cima (o site já aplica o texto).
 - Ao incluir uma foto, atualize o texto alternativo (descrição) em `src/data/`

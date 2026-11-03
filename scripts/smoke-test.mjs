@@ -9,7 +9,7 @@
  *  - links vazios, âncoras quebradas, links internos que não abrem (inclusive com
  *    subcaminho, como /roadt/ no GitHub Pages) e links externos sem rel="noopener";
  *  - imagens sem texto alternativo e estrutura de títulos (um único <h1>);
- *  - menu mobile, filtros de destinos e FAQ funcionando;
+ *  - menu mobile, carrossel do topo, filtros de destinos e FAQ funcionando;
  *  - acessibilidade automática (axe-core, WCAG 2.1 AA).
  * Salva capturas de tela em test-results/screens/.
  *
@@ -241,7 +241,30 @@ async function checkPage(browser, vp, axeSource) {
   else ok(`FAQ abre ao clicar${states[0] ? '' : ' (um item por vez)'}`);
   await summaries.nth(1).click();
 
-  // 6) Acessibilidade (axe-core)
+  // 6) Carrossel do topo (indicadores e pausar/continuar)
+  const heroControls = page.locator('[data-hero-controls]');
+  if (await heroControls.count()) {
+    await heroControls.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+    if (!(await heroControls.isVisible())) {
+      fail(`[${vp.name}] controles do carrossel não apareceram`);
+    } else {
+      const dots = page.locator('[data-hero-controls] [data-go]');
+      await dots.nth(1).click();
+      const active = await page.locator('[data-slide].is-active').getAttribute('data-slide');
+      const current = await dots.nth(1).getAttribute('aria-current');
+      const pause = page.locator('[data-hero-pause]');
+      const before = await pause.getAttribute('aria-pressed');
+      await pause.click();
+      const after = await pause.getAttribute('aria-pressed');
+      await pause.click();
+      await dots.nth(0).click();
+      if (active !== '1' || current !== 'true') fail(`[${vp.name}] carrossel não trocou de foto pelo indicador`);
+      else if (before === after) fail(`[${vp.name}] botão pausar/continuar do carrossel não alternou`);
+      else ok('carrossel: indicadores e pausar/continuar');
+    }
+  }
+
+  // 7) Acessibilidade (axe-core)
   await page.addScriptTag({ content: axeSource });
   const axe = await page.evaluate(async () => {
     // eslint-disable-next-line no-undef
@@ -255,16 +278,34 @@ async function checkPage(browser, vp, axeSource) {
   }
   if (!axe.length) ok('axe-core: nenhuma violação WCAG 2.1 AA');
 
-  // 7) Erros de console/rede
+  // 8) Erros de console/rede
   errors.forEach((e) => fail(`[${vp.name}] ${e}`));
   if (!errors.length) ok('sem erros de console ou de rede');
 
-  // 8) Captura de tela
+  // 9) Captura de tela
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({ path: path.join(SHOTS, `${vp.name}.png`), fullPage: true });
 
   await context.close();
   return audit.external;
+}
+
+/** Sem "reduzir movimento", o carrossel deve trocar de foto sozinho. */
+async function checkAutoplay(browser) {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  await page.goto(HOME, { waitUntil: 'load' });
+  if (!(await page.locator('[data-hero-controls]').count())) return page.close();
+  const interval = Number(await page.locator('[data-hero]').getAttribute('data-interval')) || 6000;
+  await page.mouse.move(5, 5); // fora do carrossel (sobre o cabeçalho)
+  const changed = await page
+    .waitForFunction(() => document.querySelector('[data-slide].is-active')?.getAttribute('data-slide') !== '0', null, {
+      timeout: interval + 3000,
+    })
+    .then(() => true)
+    .catch(() => false);
+  if (!changed) fail('carrossel não trocou de foto automaticamente');
+  else ok('carrossel troca de foto automaticamente');
+  await page.close();
 }
 
 async function check404(browser) {
@@ -286,6 +327,8 @@ try {
   for (const vp of VIEWPORTS) {
     (await checkPage(browser, vp, axeSource)).forEach((u) => external.add(u));
   }
+  console.log('\n▶ carrossel automático');
+  await checkAutoplay(browser);
   console.log('\n▶ 404');
   await check404(browser);
   await browser.close();

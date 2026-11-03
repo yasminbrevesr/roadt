@@ -4,7 +4,6 @@
  * O botão leva à página do produto na loja Nuvemshop (onde ficam preço, vagas e checkout).
  */
 import Photo from '@/components/ui/Photo.astro';
-import Icon from '@/components/ui/Icon.astro';
 import CTAButton from '@/components/ui/CTAButton.astro';
 import type { Departure } from '@/data/departures';
 import type { Destination } from '@/data/destinations';
@@ -40,10 +39,7 @@ const headingId = `saida-${dep.id}`;
 
   <div class="pass__body">
     <div class="pass__head">
-      <p class="pass__location">
-        <Icon name="pin" size={14} />
-        {dep.location}
-      </p>
+      <p class="pass__location">{dep.location}</p>
       <h3 class="pass__title" id={headingId}>{dep.title}</h3>
       {dep.subtitle && <p class="pass__subtitle">{dep.subtitle}</p>}
     </div>
@@ -60,8 +56,6 @@ const headingId = `saida-${dep.id}`;
       </div>
       <div class="pass__path" aria-hidden="true">
         <span class="pass__line"></span>
-        <Icon name="plane" size={18} />
-        <span class="pass__line"></span>
       </div>
       <div class="pass__leg pass__leg--end">
         <dt>Volta</dt>
@@ -75,7 +69,6 @@ const headingId = `saida-${dep.id}`;
       <div class="pass__duration">
         <dt class="visually-hidden">Duração</dt>
         <dd>
-          <Icon name="clock" size={14} />
           {days} dias
           {dep.note && <span class="pass__note">· {dep.note}</span>}
         </dd>
@@ -143,9 +136,6 @@ const headingId = `saida-${dep.id}`;
   }
 
   .pass__location {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
     margin-bottom: 0.45rem;
     font-size: var(--fs-xs);
     font-weight: 700;

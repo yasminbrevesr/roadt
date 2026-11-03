@@ -11,13 +11,10 @@ import { withBase } from '@/lib/links';
 interface Props {
   title?: string;
   description?: string;
-  /** Cabeçalho transparente sobre o hero. */
-  headerOverlay?: boolean;
   noindex?: boolean;
 }
 
-const { title = site.seo.title, description = site.seo.description, headerOverlay = false, noindex = false } =
-  Astro.props;
+const { title = site.seo.title, description = site.seo.description, noindex = false } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const homeUrl = new URL(withBase('/'), Astro.site).href;
@@ -74,7 +71,7 @@ const structuredData = {
   </head>
   <body>
     <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
-    <Header overlay={headerOverlay} />
+    <Header />
     <main id="conteudo" tabindex="-1">
       <slot />
     </main>

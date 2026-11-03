@@ -5,7 +5,6 @@
  * link acessível por card.
  */
 import Photo from '@/components/ui/Photo.astro';
-import Icon from '@/components/ui/Icon.astro';
 import type { Destination } from '@/data/destinations';
 import { scopeLabels } from '@/data/destinations';
 import type { Departure } from '@/data/departures';
@@ -41,10 +40,7 @@ const next = nextDeparture ? dateParts(nextDeparture.start) : undefined;
   <span class="tcard__scope">{scopeLabels[d.scope]}</span>
 
   <div class="tcard__body">
-    <p class="tcard__location">
-      <Icon name="pin" size={14} />
-      {d.location}
-    </p>
+    <p class="tcard__location">{d.location}</p>
     <h3 class="tcard__title">
       <a href={href} class="tcard__link">{d.name}</a>
     </h3>
@@ -53,29 +49,20 @@ const next = nextDeparture ? dateParts(nextDeparture.start) : undefined;
     <ul class="tcard__meta" aria-label="Detalhes">
       {
         d.durationDays && (
-          <li>
-            <Icon name="clock" size={14} />
-            {d.durationDays} dias
-          </li>
+          <li>{d.durationDays} dias</li>
         )
       }
       {
         next && nextDeparture && (
           <li>
-            <Icon name="calendar" size={14} />
-            <span>
-              Próxima saída: <time datetime={nextDeparture.start} title={formatLong(nextDeparture.start)}>{next.day} {next.month}</time>
-            </span>
+            Próxima saída: <time datetime={nextDeparture.start} title={formatLong(nextDeparture.start)}>{next.day} {next.month}</time>
           </li>
         )
       }
       {price && <li>a partir de {formatPrice(price)}</li>}
     </ul>
 
-    <span class="tcard__cta" aria-hidden="true">
-      {ctaLabel}
-      <Icon name="arrow-up-right" size={16} />
-    </span>
+    <span class="tcard__cta" aria-hidden="true">{ctaLabel}</span>
   </div>
 </article>
 
@@ -141,9 +128,6 @@ const next = nextDeparture ? dateParts(nextDeparture.start) : undefined;
   }
 
   .tcard__location {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
     font-size: var(--fs-xs);
     font-weight: 600;
     letter-spacing: 0.04em;
@@ -195,23 +179,25 @@ const next = nextDeparture ? dateParts(nextDeparture.start) : undefined;
     color: rgb(246 241 231 / 0.9);
   }
 
-  .tcard__meta li {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
+  .tcard__meta li + li::before {
+    content: '·';
+    margin-right: 1rem;
+    margin-left: -0.5rem;
+    opacity: 0.7;
   }
 
   .tcard__cta {
     display: inline-flex;
     align-items: center;
     justify-self: start;
-    gap: 0.35rem;
     margin-top: 0.75rem;
-    padding: 0.55rem 0.95rem;
+    padding: 0.55rem 1.05rem;
     border: 1.5px solid rgb(246 241 231 / 0.5);
     border-radius: var(--radius-pill);
-    font-size: var(--fs-sm);
+    font-size: 0.8125rem;
     font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     transition:
       background-color var(--dur-fast) var(--ease-out),
       color var(--dur-fast) var(--ease-out),

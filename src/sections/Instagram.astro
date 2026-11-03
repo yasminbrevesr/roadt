@@ -6,7 +6,6 @@
 import SectionTitle from '@/components/ui/SectionTitle.astro';
 import Photo from '@/components/ui/Photo.astro';
 import CTAButton from '@/components/ui/CTAButton.astro';
-import Icon from '@/components/ui/Icon.astro';
 import { instagramGallery } from '@/data/gallery';
 import { site } from '@/config/site';
 
@@ -30,8 +29,6 @@ const { index } = Astro.props;
       <CTAButton
         href={site.instagram.url}
         variant="dark"
-        icon="instagram"
-        trailingIcon="arrow-up-right"
         external
         class="insta__cta"
       >
@@ -46,7 +43,7 @@ const { index } = Astro.props;
           <span class:list={['insta__tile', `insta__tile--${i + 1}`]}>
             <Photo name={item.photo} alt={item.alt} sizes="(min-width: 64rem) 220px, (min-width: 40rem) 32vw, 48vw" widths={[300, 480, 640]} />
             <span class="insta__overlay" aria-hidden="true">
-              <Icon name="instagram" size={26} />
+              Ver no Instagram
             </span>
           </span>
         ))
@@ -124,8 +121,13 @@ const { index } = Astro.props;
     inset: 0;
     display: grid;
     place-items: center;
-    background: rgb(15 31 26 / 0.45);
+    background: rgb(15 31 26 / 0.55);
     color: var(--c-paper);
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-align: center;
     opacity: 0;
     transition: opacity var(--dur) var(--ease-out);
   }
