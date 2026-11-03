@@ -3,8 +3,8 @@ import SectionTitle from '@/components/ui/SectionTitle.astro';
 import TravelCard from '@/components/cards/TravelCard.astro';
 import { destinations } from '@/data/destinations';
 import type { Departure } from '@/data/departures';
-import { storeShortcuts } from '@/data/navigation';
-import { storeSearchLink } from '@/lib/links';
+import { tripShortcuts } from '@/data/navigation';
+import { destinationPage } from '@/lib/links';
 
 interface Props {
   index?: string;
@@ -47,7 +47,7 @@ const nextFor = (slug: string) => upcoming.find((d) => d.destination === slug);
             <TravelCard
               destination={d}
               wide={d.featured}
-              href={storeSearchLink(d.searchTerm)}
+              href={destinationPage(d.slug)}
               nextDeparture={nextFor(d.slug)}
             />
           </li>
@@ -60,7 +60,7 @@ const nextFor = (slug: string) => upcoming.find((d) => d.destination === slug);
       <p class="destinations__more-label">Explore por</p>
       <ul class="chips">
         {
-          storeShortcuts.map((item) => (
+          tripShortcuts.map((item) => (
             <li>
               <a class="chip" href={item.href}>
                 {item.label}
@@ -115,30 +115,6 @@ const nextFor = (slug: string) => upcoming.find((d) => d.destination === slug);
     flex-wrap: wrap;
     gap: 0.5rem;
     margin: calc(1.25rem - clamp(2.25rem, 1.5rem + 3vw, 4rem)) 0 clamp(1.75rem, 1.25rem + 2vw, 3rem);
-  }
-
-  .filters__btn {
-    min-height: 2.75rem;
-    padding: 0.5rem 1.1rem;
-    border: 1.5px solid var(--c-line);
-    border-radius: var(--radius-pill);
-    background: transparent;
-    font-weight: 600;
-    font-size: var(--fs-sm);
-    transition:
-      background-color var(--dur-fast) var(--ease-out),
-      border-color var(--dur-fast) var(--ease-out),
-      color var(--dur-fast) var(--ease-out);
-  }
-
-  .filters__btn:hover {
-    border-color: var(--c-ink);
-  }
-
-  .filters__btn[aria-pressed='true'] {
-    background: var(--c-ink);
-    border-color: var(--c-ink);
-    color: var(--c-paper);
   }
 
   /* Mobile: carrossel com rolagem lateral e encaixe por card */

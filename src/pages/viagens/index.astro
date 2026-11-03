@@ -1,0 +1,197 @@
+---
+/**
+ * Todas as viagens: calendário completo de saídas (com filtros) e todos os destinos.
+ * Filtros também funcionam pelo endereço: /viagens/?filtro=brasil | internacional | 2027
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/layout/PageHeader.astro';
+import DepartureCard from '@/components/cards/DepartureCard.astro';
+import TravelCard from '@/components/cards/TravelCard.astro';
+import { destinations, findDestination } from '@/data/destinations';
+import { upcomingDepartures } from '@/data/departures';
+import { departureYears } from '@/data/navigation';
+import { todayISO } from '@/lib/dates';
+import { destinationPage, whatsappLink, withBase } from '@/lib/links';
+
+const upcoming = upcomingDepartures(todayISO());
+const nextFor = (slug: string) => upcoming.find((d) => d.destination === slug);
+
+const filters = [
+  { value: 'todas', label: 'Todas' },
+  { value: 'brasil', label: 'Brasil' },
+  { value: 'internacional', label: 'América do Sul' },
+  ...departureYears.map((year) => ({ value: year, label: year })),
+];
+---
+
+<BaseLayout
+  title="Viagens em grupo · RoadTrip021"
+  description="Calendário de saídas e destinos da RoadTrip021: viagens em grupo pelo Brasil e pela América do Sul."
+>
+  <PageHeader
+    title="Todas as <em>viagens</em>"
+    lead="Escolha o destino, confira as próximas datas e reserve sua vaga. Viagens em grupo pelo Brasil e pela América do Sul."
+    crumbs={[{ label: 'Início', href: withBase('/') }, { label: 'Viagens' }]}
+  />
+
+  <section id="calendario" class="section trips-cal surface-ink on-dark" aria-labelledby="cal-title">
+    <div class="container">
+      <div class="trips-head">
+        <h2 id="cal-title" class="trips-h2">Calendário de saídas</h2>
+        <div class="trips-filters" role="group" aria-label="Filtrar saídas" data-trip-filters hidden>
+          {
+            filters.map((f) => (
+              <button
+                type="button"
+                class="filters__btn"
+                aria-pressed={f.value === 'todas' ? 'true' : 'false'}
+                data-filter={f.value}
+              >
+                {f.label}
+              </button>
+            ))
+          }
+        </div>
+      </div>
+
+      {
+        upcoming.length > 0 ? (
+          <ul class="trips-cal__grid" data-trip-list>
+            {upcoming.map((dep) => {
+              const dest = findDestination(dep.destination);
+              return (
+                <li data-departure-item data-scope={dest?.scope} data-year={dep.start.slice(0, 4)}>
+                  <DepartureCard departure={dep} destination={dest} />
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p class="trips-empty">Novas datas em breve.</p>
+        )
+      }
+      <p class="trips-empty" data-trip-empty hidden>
+        Nenhuma saída publicada para este filtro no momento.
+        <a href={whatsappLink('Olá! Quero saber das próximas datas de viagem da RoadTrip021.')} target="_blank" rel="noopener noreferrer">
+          Fale com a gente<span class="visually-hidden"> (abre em nova aba)</span>
+        </a>
+        para saber das próximas datas.
+      </p>
+      <p class="visually-hidden" aria-live="polite" data-trip-status></p>
+    </div>
+  </section>
+
+  <section id="destinos" class="section" aria-labelledby="dest-title">
+    <div class="container">
+      <h2 id="dest-title" class="trips-h2 trips-h2--spaced">Destinos</h2>
+      <ul class="card-rail" data-dest-grid>
+        {
+          destinations.map((d) => (
+            <li>
+              <TravelCard destination={d} href={destinationPage(d.slug)} nextDeparture={nextFor(d.slug)} />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const bar = document.querySelector<HTMLElement>('[data-trip-filters]');
+  const list = document.querySelector<HTMLElement>('[data-trip-list]');
+  const empty = document.querySelector<HTMLElement>('[data-trip-empty]');
+  const status = document.querySelector<HTMLElement>('[data-trip-status]');
+
+  if (bar && list) {
+    bar.hidden = false; // filtros só aparecem com JavaScript ativo
+    const buttons = Array.from(bar.querySelectorAll<HTMLButtonElement>('[data-filter]'));
+    const items = Array.from(list.querySelectorAll<HTMLElement>('[data-departure-item]'));
+    const today = new Date().toISOString().slice(0, 10);
+    const isPast = (item: HTMLElement) => (item.querySelector<HTMLElement>('[data-start]')?.dataset.start ?? '') < today;
+
+    const apply = (value: string, updateUrl: boolean) => {
+      const filter = buttons.some((b) => b.dataset.filter === value) ? value : 'todas';
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === filter)));
+      let visible = 0;
+      items.forEach((item) => {
+        const match =
+          filter === 'todas' || item.dataset.scope === filter || item.dataset.year === filter;
+        item.hidden = !match || isPast(item);
+        if (!item.hidden) visible += 1;
+      });
+      if (empty) empty.hidden = visible > 0;
+      if (status) status.textContent = `${visible} saídas exibidas`;
+      if (updateUrl) {
+        const url = new URL(window.location.href);
+        if (filter === 'todas') url.searchParams.delete('filtro');
+        else url.searchParams.set('filtro', filter);
+        history.replaceState(null, '', url);
+      }
+    };
+
+    buttons.forEach((b) => b.addEventListener('click', () => apply(b.dataset.filter ?? 'todas', true)));
+    apply(new URLSearchParams(window.location.search).get('filtro') ?? 'todas', false);
+  }
+</script>
+
+<style>
+  .trips-head {
+    display: grid;
+    gap: 1.25rem;
+    margin-bottom: clamp(2rem, 1.5rem + 2vw, 3rem);
+  }
+
+  @media (min-width: 56rem) {
+    .trips-head {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+    }
+  }
+
+  .trips-h2 {
+    font-size: clamp(2rem, 1.5rem + 2vw, 3rem);
+  }
+
+  .trips-h2--spaced {
+    margin-bottom: clamp(2rem, 1.5rem + 2vw, 3rem);
+  }
+
+  .trips-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .trips-cal__grid {
+    display: grid;
+    gap: 1.25rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .trips-cal__grid > li {
+    display: grid;
+  }
+
+  @media (min-width: 64rem) {
+    .trips-cal__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.5rem;
+    }
+  }
+
+  .trips-empty {
+    font-size: var(--fs-lg);
+  }
+
+  .trips-empty a {
+    color: var(--c-gold);
+    font-weight: 600;
+  }
+
+  /* Cabeçalho e calendário formam um único bloco escuro. */
+  .trips-cal {
+    padding-top: 0.5rem;
+  }
+</style>

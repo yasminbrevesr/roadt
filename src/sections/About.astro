@@ -2,9 +2,9 @@
 import SectionTitle from '@/components/ui/SectionTitle.astro';
 import Photo from '@/components/ui/Photo.astro';
 import CTAButton from '@/components/ui/CTAButton.astro';
-import { site, storePaths } from '@/config/site';
+import { site } from '@/config/site';
 import { destinations } from '@/data/destinations';
-import { storeLink } from '@/lib/links';
+import { aboutPage } from '@/lib/links';
 
 interface Props {
   index?: string;
@@ -51,7 +51,7 @@ const stampText = `Viagens em grupo • Desde ${site.since.year} • ${site.home
       </dl>
 
       <div data-reveal>
-        <CTAButton href={storeLink(storePaths.about)} variant="outline">Conheça nossa história</CTAButton>
+        <CTAButton href={aboutPage()} variant="outline">Conheça nossa história</CTAButton>
       </div>
     </div>
 

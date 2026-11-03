@@ -1,11 +1,18 @@
 # RoadTrip021 — site institucional
 
 Novo site da **RoadTrip021**, empresa de viagens e experiências em grupo.
-Homepage editorial, mobile-first, rápida e acessível, que leva o visitante para a
-**loja Nuvemshop** (onde continuam produtos, carrinho e checkout).
+Site editorial, mobile-first, rápido e acessível, com navegação interna completa:
 
-> O site **não substitui** a loja. Todos os botões de compra apontam para as páginas
-> reais de produto da Nuvemshop — nada do fluxo de pagamento foi alterado.
+| Página | Endereço |
+| --- | --- |
+| Início | `/` |
+| Todas as viagens (calendário + destinos, com filtros) | `/viagens/` (filtros pelo endereço: `?filtro=brasil`, `internacional`, `2027`) |
+| Página de cada destino (descrição, itens incluídos, datas e reserva) | `/viagens/<destino>/` (ex.: `/viagens/jalapao/`) |
+| Quem somos | `/sobre/` |
+
+> **Pagamento continua na loja Nuvemshop.** O único passo que sai do site é o botão
+> **Reservar** de cada data (página de pagamento daquela saída na loja) e o link dos
+> **Termos de Uso**, documento legal oficial. Nada do fluxo de compra foi alterado.
 
 ---
 
@@ -63,7 +70,7 @@ viagens ou links, edite apenas os arquivos abaixo:
 | --- | --- |
 | WhatsApp, Instagram, URL da loja, textos institucionais, CNPJ | `src/config/site.ts` |
 | **Próximas saídas** (datas e links de compra) | `src/data/departures.ts` |
-| Destinos da seção "Descubra nossas viagens" | `src/data/destinations.ts` |
+| Destinos (cards e páginas `/viagens/<destino>/`: descrição e itens incluídos) | `src/data/destinations.ts` |
 | Perguntas frequentes | `src/data/faq.ts` |
 | Diferenciais ("Por que viajar com a RoadTrip?") | `src/data/highlights.ts` |
 | Avaliações do Google | `src/data/reviews.ts` |
@@ -89,6 +96,8 @@ Em `src/data/departures.ts`, copie um bloco existente e ajuste:
 },
 ```
 
+- A saída aparece sozinha na home, em `/viagens/` e na página do destino; o campo `url` é a
+  página de pagamento da loja usada pelo botão **Reservar**.
 - A duração ("6 dias") é calculada automaticamente pelas datas.
 - Saídas com data já passada **somem sozinhas** (no build e também no navegador).
 - A homepage mostra as 6 próximas (4 no celular/tablet) e um botão para o calendário completo.
@@ -122,8 +131,11 @@ onde faltava informação verificada, o site deixa o espaço preparado.
 - [ ] **Dados legais** (razão social, CNPJ, endereço) em `src/config/site.ts` → `legal`.
 - [ ] **Confirmar o WhatsApp oficial** `(21) 96724-5753` (fonte: Termos de adesão do site atual).
       Outras páginas antigas da loja citam números diferentes.
-- [ ] **Validar o link "Ver saídas" dos destinos** (usa a busca da loja: `/search/?q=...`).
-      Se não abrir resultados, troque `search` por `'/viagens'` em `src/config/site.ts`.
+- [ ] **Descrições dos destinos sem texto**: Jalapão, Chapada Diamantina e Ibitipoca ainda não
+      têm descrição verificada (`description`/`includes` em `src/data/destinations.ts`). Enquanto
+      isso, a página mostra os dados da viagem e convida a pedir o roteiro pelo WhatsApp.
+- [ ] **Termos de Uso**: hoje abrem a página oficial na loja. Se quiser uma página interna,
+      envie o texto completo vigente.
 - [ ] **Imagem de compartilhamento** (1200×630) em `public/og-image.jpg` e informar em `site.seo.ogImage`.
 - [ ] **Revisar textos** institucionais e do FAQ com a equipe.
 - [ ] Ao concluir tudo, **desligar as etiquetas de pendência**: `showPendingMarkers: false` em `src/config/site.ts`.
@@ -229,7 +241,7 @@ src/
 │   ├── ui/                  # CTAButton, SectionTitle, Photo, Logo, Icon, PendingNote
 │   └── FAQAccordion.astro
 ├── sections/                # seções da homepage (Hero, Destinations, UpcomingTrips, ...)
-├── pages/                   # index.astro (homepage) e 404.astro
+├── pages/                   # index (home), viagens/index, viagens/[slug] (destinos), sobre, 404
 └── assets/                  # fotos e logo (otimizados no build)
 public/                      # arquivos servidos como estão (favicon, robots.txt)
 scripts/smoke-test.mjs       # teste automatizado

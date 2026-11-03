@@ -1,0 +1,66 @@
+---
+/**
+ * Trilho de navegação ("Início › Viagens › Jalapão").
+ * O último item é a página atual (sem link).
+ */
+interface Crumb {
+  label: string;
+  href?: string;
+}
+
+interface Props {
+  items: Crumb[];
+  class?: string;
+}
+
+const { items, class: className } = Astro.props;
+---
+
+<nav class:list={['crumbs', className]} aria-label="Você está em">
+  <ol>
+    {
+      items.map((item, i) =>
+        item.href && i < items.length - 1 ? (
+          <li>
+            <a href={item.href}>{item.label}</a>
+          </li>
+        ) : (
+          <li aria-current="page">{item.label}</li>
+        ),
+      )
+    }
+  </ol>
+</nav>
+
+<style>
+  .crumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 0;
+    list-style: none;
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .crumbs li + li::before {
+    content: '/';
+    margin: 0 0.6rem;
+    opacity: 0.55;
+  }
+
+  .crumbs a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    text-decoration: none;
+    opacity: 0.85;
+  }
+
+  .crumbs a:hover {
+    opacity: 1;
+    text-decoration: underline;
+  }
+</style>

@@ -4,7 +4,7 @@
  * Somente texto (sem ícones). Dados legais aparecem quando preenchidos em src/config/site.ts.
  */
 import Logo from '@/components/ui/Logo.astro';
-import { legalLinks, mainNav, storeShortcuts } from '@/data/navigation';
+import { legalLinks, mainNav, tripShortcuts } from '@/data/navigation';
 import { site } from '@/config/site';
 import { whatsappLink, withBase } from '@/lib/links';
 
@@ -47,7 +47,7 @@ const hasLegal = Boolean(companyName || cnpj || address);
         <h3 id="sf-trips" class="sf-col__title">Viagens</h3>
         <ul>
           {
-            storeShortcuts.map((item) => (
+            tripShortcuts.map((item) => (
               <li>
                 <a href={item.href}>{item.label}</a>
               </li>
@@ -93,11 +93,20 @@ const hasLegal = Boolean(companyName || cnpj || address);
     </div>
     <ul class="sf-bottom__links">
       {
-        legalLinks.map((item) => (
-          <li>
-            <a href={item.href}>{item.label}</a>
-          </li>
-        ))
+        legalLinks.map((item) =>
+          item.external ? (
+            <li>
+              <a href={item.href} target="_blank" rel="noopener noreferrer">
+                {item.label}
+                <span class="visually-hidden"> (abre em nova aba)</span>
+              </a>
+            </li>
+          ) : (
+            <li>
+              <a href={item.href}>{item.label}</a>
+            </li>
+          ),
+        )
       }
       <li>
         <a href="#conteudo">Voltar ao topo</a>

@@ -3,7 +3,8 @@
  * Teste de fumaça do site (rode após `npm run build`):
  *   npm test
  *
- * Verifica, em vários tamanhos de tela:
+ * Verifica, em vários tamanhos de tela (homepage) e nas páginas internas
+ * (/viagens/, páginas de destino e /sobre/):
  *  - erros no console / JavaScript e arquivos que não carregaram;
  *  - rolagem horizontal indevida;
  *  - links vazios, âncoras quebradas, links internos que não abrem (inclusive com
@@ -115,89 +116,12 @@ async function checkPage(browser, vp, axeSource) {
     locale: 'pt-BR',
   });
   const page = await context.newPage();
-  const errors = [];
-  page.on('console', (m) => m.type() === 'error' && errors.push(`console: ${m.text()}`));
-  page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
-  page.on('requestfailed', (r) => {
-    if (r.url().startsWith(BASE)) errors.push(`requestfailed: ${r.url()}`);
-  });
-  page.on('response', (r) => {
-    if (r.url().startsWith(BASE) && r.status() >= 400) errors.push(`HTTP ${r.status()}: ${r.url()}`);
-  });
+  const errors = collectErrors(page);
 
   await page.goto(HOME, { waitUntil: 'networkidle' });
 
-  // 1) Rolagem horizontal
-  const overflow = await page.evaluate(() => {
-    const doc = document.documentElement;
-    if (doc.scrollWidth <= window.innerWidth) return null;
-    const offenders = [];
-    for (const el of document.querySelectorAll('body *')) {
-      const r = el.getBoundingClientRect();
-      if (r.right > window.innerWidth + 1 && !el.closest('[data-dest-grid], .ticker')) {
-        offenders.push(`${el.tagName.toLowerCase()}.${[...el.classList].join('.')} (right=${Math.round(r.right)})`);
-      }
-      if (offenders.length > 8) break;
-    }
-    return { scrollWidth: doc.scrollWidth, offenders };
-  });
-  if (overflow) fail(`[${vp.name}] rolagem horizontal: ${overflow.scrollWidth}px > ${vp.width}px → ${overflow.offenders.join(', ')}`);
-  else ok('sem rolagem horizontal');
-
-  // 2) Estrutura e conteúdo
-  const audit = await page.evaluate(() => {
-    const issues = [];
-    const h1 = document.querySelectorAll('h1').length;
-    if (h1 !== 1) issues.push(`esperado 1 <h1>, encontrados ${h1}`);
-    document.querySelectorAll('img').forEach((img) => {
-      if (!img.hasAttribute('alt')) issues.push(`imagem sem alt: ${img.src}`);
-    });
-    document.querySelectorAll('[role="img"]').forEach((el) => {
-      if (!el.getAttribute('aria-label')) issues.push(`role=img sem aria-label: ${el.className}`);
-    });
-    const external = new Set();
-    const internal = new Set();
-    document.querySelectorAll('a').forEach((a) => {
-      const href = a.getAttribute('href');
-      if (!href || href === '#') {
-        issues.push(`link sem destino: "${a.textContent.trim().slice(0, 40)}"`);
-        return;
-      }
-      const url = new URL(href, location.href);
-      if (url.origin === location.origin) {
-        if (url.pathname === location.pathname && url.hash) {
-          const id = decodeURIComponent(url.hash.slice(1));
-          if (!document.getElementById(id)) issues.push(`âncora quebrada: ${href}`);
-        } else {
-          internal.add(url.pathname);
-        }
-      } else if (/^https?:/.test(url.protocol)) {
-        external.add(href.split('?')[0]);
-        if (a.target === '_blank' && !/noopener/.test(a.rel)) issues.push(`link externo sem noopener: ${href}`);
-      }
-    });
-    document.querySelectorAll('link[rel="icon"]').forEach((l) => internal.add(new URL(l.href).pathname));
-    // Títulos configurados para uma linha não podem quebrar nem ultrapassar a largura.
-    document.querySelectorAll('.st--single .st__title').forEach((h) => {
-      const lineHeight = parseFloat(getComputedStyle(h).lineHeight) || parseFloat(getComputedStyle(h).fontSize);
-      const rect = h.getBoundingClientRect();
-      const box = h.parentElement.getBoundingClientRect();
-      if (rect.height > lineHeight * 1.5) issues.push(`título quebrou em mais de uma linha: "${h.textContent.trim()}"`);
-      if (h.scrollWidth > h.clientWidth + 1 || rect.right > box.right + 1)
-        issues.push(`título não cabe na largura: "${h.textContent.trim()}"`);
-    });
-    document.querySelectorAll('button').forEach((b) => {
-      const name = (b.getAttribute('aria-label') || b.textContent || '').trim();
-      if (!name) issues.push('botão sem nome acessível');
-    });
-    return { issues, external: [...external], internal: [...internal] };
-  });
-  for (const pathname of audit.internal) {
-    const res = await fetch(BASE + pathname);
-    if (!res.ok) audit.issues.push(`link interno não abre (${res.status}): ${pathname}`);
-  }
-  audit.issues.forEach((i) => fail(`[${vp.name}] ${i}`));
-  if (!audit.issues.length) ok('títulos, imagens, links e botões consistentes');
+  // 1) e 2) Rolagem horizontal, estrutura e links
+  const external = await auditStructure(page, vp.name);
 
   // 3) Menu: mobile abre/fecha; desktop mostra navegação
   const toggle = page.locator('[data-menu-open]');
@@ -274,18 +198,7 @@ async function checkPage(browser, vp, axeSource) {
   }
 
   // 7) Acessibilidade (axe-core)
-  await page.addScriptTag({ content: axeSource });
-  const axe = await page.evaluate(async () => {
-    // eslint-disable-next-line no-undef
-    const r = await window.axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] } });
-    return r.violations.map((v) => ({ id: v.id, impact: v.impact, help: v.help, nodes: v.nodes.slice(0, 3).map((n) => n.target.join(' ')) }));
-  });
-  for (const v of axe) {
-    const msg = `[${vp.name}] axe ${v.impact}: ${v.id} — ${v.help} → ${v.nodes.join(' | ')}`;
-    if (v.impact === 'serious' || v.impact === 'critical') fail(msg);
-    else warnings.push(msg);
-  }
-  if (!axe.length) ok('axe-core: nenhuma violação WCAG 2.1 AA');
+  await runAxe(page, axeSource, vp.name);
 
   // 8) Erros de console/rede
   errors.forEach((e) => fail(`[${vp.name}] ${e}`));
@@ -296,7 +209,173 @@ async function checkPage(browser, vp, axeSource) {
   await page.screenshot({ path: path.join(SHOTS, `${vp.name}.png`), fullPage: true });
 
   await context.close();
+  return external;
+}
+
+/** Rolagem horizontal, títulos, imagens, links (internos devem abrir) e botões. */
+async function auditStructure(page, tag) {
+  const overflow = await page.evaluate(() => {
+    const doc = document.documentElement;
+    if (doc.scrollWidth <= window.innerWidth) return null;
+    const offenders = [];
+    for (const el of document.querySelectorAll('body *')) {
+      const r = el.getBoundingClientRect();
+      if (r.right > window.innerWidth + 1 && !el.closest('[data-dest-grid], .ticker')) {
+        offenders.push(`${el.tagName.toLowerCase()}.${[...el.classList].join('.')} (right=${Math.round(r.right)})`);
+      }
+      if (offenders.length > 8) break;
+    }
+    return { scrollWidth: doc.scrollWidth, offenders };
+  });
+  if (overflow) fail(`[${tag}] rolagem horizontal: ${overflow.scrollWidth}px > ${await page.evaluate(() => window.innerWidth)}px → ${overflow.offenders.join(', ')}`);
+  else ok('sem rolagem horizontal');
+
+  // 2) Estrutura e conteúdo
+  const audit = await page.evaluate(() => {
+    const issues = [];
+    const h1 = document.querySelectorAll('h1').length;
+    if (h1 !== 1) issues.push(`esperado 1 <h1>, encontrados ${h1}`);
+    document.querySelectorAll('img').forEach((img) => {
+      if (!img.hasAttribute('alt')) issues.push(`imagem sem alt: ${img.src}`);
+    });
+    document.querySelectorAll('[role="img"]').forEach((el) => {
+      if (!el.getAttribute('aria-label')) issues.push(`role=img sem aria-label: ${el.className}`);
+    });
+    const external = new Set();
+    const internal = new Set();
+    document.querySelectorAll('a').forEach((a) => {
+      const href = a.getAttribute('href');
+      if (!href || href === '#') {
+        issues.push(`link sem destino: "${a.textContent.trim().slice(0, 40)}"`);
+        return;
+      }
+      const url = new URL(href, location.href);
+      if (url.origin === location.origin) {
+        if (url.pathname === location.pathname && url.hash) {
+          const id = decodeURIComponent(url.hash.slice(1));
+          if (!document.getElementById(id)) issues.push(`âncora quebrada: ${href}`);
+        } else {
+          internal.add(url.pathname);
+        }
+      } else if (/^https?:/.test(url.protocol)) {
+        external.add(href.split('?')[0]);
+        if (a.target === '_blank' && !/noopener/.test(a.rel)) issues.push(`link externo sem noopener: ${href}`);
+      }
+    });
+    document.querySelectorAll('link[rel="icon"]').forEach((l) => internal.add(new URL(l.href).pathname));
+    // Títulos configurados para uma linha não podem quebrar nem ultrapassar a largura.
+    document.querySelectorAll('.st--single .st__title').forEach((h) => {
+      const lineHeight = parseFloat(getComputedStyle(h).lineHeight) || parseFloat(getComputedStyle(h).fontSize);
+      const rect = h.getBoundingClientRect();
+      const box = h.parentElement.getBoundingClientRect();
+      if (rect.height > lineHeight * 1.5) issues.push(`título quebrou em mais de uma linha: "${h.textContent.trim()}"`);
+      if (h.scrollWidth > h.clientWidth + 1 || rect.right > box.right + 1)
+        issues.push(`título não cabe na largura: "${h.textContent.trim()}"`);
+    });
+    document.querySelectorAll('button').forEach((b) => {
+      const name = (b.getAttribute('aria-label') || b.textContent || '').trim();
+      if (!name) issues.push('botão sem nome acessível');
+    });
+    return { issues, external: [...external], internal: [...internal] };
+  });
+  for (const pathname of audit.internal) {
+    const res = await fetch(BASE + pathname);
+    if (!res.ok) audit.issues.push(`link interno não abre (${res.status}): ${pathname}`);
+  }
+  audit.issues.forEach((i) => fail(`[${tag}] ${i}`));
+  if (!audit.issues.length) ok('títulos, imagens, links e botões consistentes');
   return audit.external;
+}
+
+/** Acessibilidade automática (WCAG 2.1 AA): falha em violações sérias/críticas. */
+async function runAxe(page, axeSource, tag) {
+  await page.addScriptTag({ content: axeSource });
+  const axe = await page.evaluate(async () => {
+    // eslint-disable-next-line no-undef
+    const r = await window.axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] } });
+    return r.violations.map((v) => ({ id: v.id, impact: v.impact, help: v.help, nodes: v.nodes.slice(0, 3).map((n) => n.target.join(' ')) }));
+  });
+  for (const v of axe) {
+    const msg = `[${tag}] axe ${v.impact}: ${v.id} — ${v.help} → ${v.nodes.join(' | ')}`;
+    if (v.impact === 'serious' || v.impact === 'critical') fail(msg);
+    else warnings.push(msg);
+  }
+  if (!axe.length) ok('axe-core: nenhuma violação WCAG 2.1 AA');
+}
+
+/** Erros de console, de JavaScript e arquivos do site que não carregaram. */
+function collectErrors(page) {
+  const errors = [];
+  page.on('console', (m) => m.type() === 'error' && errors.push(`console: ${m.text()}`));
+  page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
+  page.on('requestfailed', (r) => {
+    if (r.url().startsWith(BASE)) errors.push(`requestfailed: ${r.url()}`);
+  });
+  page.on('response', (r) => {
+    if (r.url().startsWith(BASE) && r.status() >= 400) errors.push(`HTTP ${r.status()}: ${r.url()}`);
+  });
+  return errors;
+}
+
+/** Páginas internas (viagens, destinos, quem somos) em celular e desktop. */
+const SUBPAGES = ['viagens/', 'viagens/bahia/', 'viagens/jalapao/', 'sobre/'];
+
+async function checkSubpages(browser, axeSource) {
+  const external = new Set();
+  for (const vp of [VIEWPORTS[1], VIEWPORTS[5]]) {
+    for (const sub of SUBPAGES) {
+      const tag = `${vp.name} /${sub}`;
+      console.log(`\n▶ ${tag}`);
+      const context = await browser.newContext({
+        viewport: { width: vp.width, height: vp.height },
+        isMobile: vp.mobile && vp.width < 768,
+        hasTouch: vp.mobile,
+        reducedMotion: 'reduce',
+        locale: 'pt-BR',
+      });
+      const page = await context.newPage();
+      const errors = collectErrors(page);
+      await page.goto(HOME + sub, { waitUntil: 'networkidle' });
+      (await auditStructure(page, tag)).forEach((u) => external.add(u));
+      await runAxe(page, axeSource, tag);
+      errors.forEach((e) => fail(`[${tag}] ${e}`));
+      if (!errors.length) ok('sem erros de console ou de rede');
+      const name = sub.replace(/\/$/, '').replace(/\//g, '-');
+      await page.screenshot({ path: path.join(SHOTS, `${vp.name}-${name}.png`), fullPage: true });
+      await context.close();
+    }
+  }
+  return external;
+}
+
+/** Filtros da página /viagens/ (inclusive pelo endereço ?filtro=) e link direto para uma data. */
+async function checkTripFeatures(browser) {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  await page.goto(`${HOME}viagens/?filtro=internacional`, { waitUntil: 'networkidle' });
+  const visibleScopes = await page.$$eval('[data-trip-list] > li:not([hidden])', (els) => els.map((e) => e.dataset.scope));
+  const pressed = await page.getAttribute('[data-filter="internacional"]', 'aria-pressed');
+  if (!visibleScopes.length || visibleScopes.some((sc) => sc !== 'internacional') || pressed !== 'true')
+    fail(`/viagens/?filtro=internacional não filtrou corretamente (${visibleScopes.join(',')})`);
+  else ok(`filtro pelo endereço: ${visibleScopes.length} saídas internacionais`);
+  await page.click('[data-filter="todas"]');
+  const all = await page.locator('[data-trip-list] > li:not([hidden])').count();
+  const total = await page.locator('[data-trip-list] > li').count();
+  if (all !== total || page.url().includes('filtro=')) fail('filtro "Todas" não restaurou a lista/endereço');
+  else ok(`filtro "Todas" mostra as ${total} saídas`);
+
+  // Card da home leva à página do destino já na data escolhida
+  await page.goto(HOME, { waitUntil: 'networkidle' });
+  const href = await page.locator('#proximas-saidas .pass .btn').first().getAttribute('href');
+  if (!href || !/\/viagens\/[^/]+\/#saida-/.test(href)) fail(`botão do cartão de saída não aponta para a página interna (${href})`);
+  else {
+    await page.goto(new URL(href, HOME).href, { waitUntil: 'networkidle' });
+    const id = decodeURIComponent(new URL(page.url()).hash.slice(1));
+    const isTarget = await page.evaluate((i) => document.getElementById(i)?.matches(':target') ?? false, id);
+    const reserve = await page.locator(`#${id} a.btn`).getAttribute('href');
+    if (!isTarget || !reserve?.includes('/produtos/')) fail('página do destino não destacou a data ou não tem botão Reservar');
+    else ok('cartão de saída → página do destino com a data destacada e botão Reservar');
+  }
+  await page.close();
 }
 
 /** Sem "reduzir movimento", o carrossel deve trocar de foto sozinho. */
@@ -336,6 +415,9 @@ try {
   for (const vp of VIEWPORTS) {
     (await checkPage(browser, vp, axeSource)).forEach((u) => external.add(u));
   }
+  (await checkSubpages(browser, axeSource)).forEach((u) => external.add(u));
+  console.log('\n▶ filtros e reserva');
+  await checkTripFeatures(browser);
   console.log('\n▶ carrossel automático');
   await checkAutoplay(browser);
   console.log('\n▶ 404');

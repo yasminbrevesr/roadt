@@ -21,7 +21,7 @@ interface Props {
   wide?: boolean;
 }
 
-const { destination: d, href, nextDeparture, price, ctaLabel = 'Ver saídas', wide = false } = Astro.props;
+const { destination: d, href, nextDeparture, price, ctaLabel = 'Ver viagem', wide = false } = Astro.props;
 const next = nextDeparture ? dateParts(nextDeparture.start) : undefined;
 ---
 

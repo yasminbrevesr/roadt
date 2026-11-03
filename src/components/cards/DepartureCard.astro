@@ -1,23 +1,33 @@
 ---
 /**
  * Card de próxima saída, no formato de "cartão de embarque".
- * O botão leva à página do produto na loja Nuvemshop (onde ficam preço, vagas e checkout).
+ * O botão leva à página interna do destino, já posicionada nesta data
+ * (lá ficam o roteiro e o botão de reserva).
  */
 import Photo from '@/components/ui/Photo.astro';
 import CTAButton from '@/components/ui/CTAButton.astro';
 import type { Departure } from '@/data/departures';
 import type { Destination } from '@/data/destinations';
 import { dateParts, durationInDays, formatLong, formatPrice } from '@/lib/dates';
-import { storeLink } from '@/lib/links';
+import { destinationPage } from '@/lib/links';
 
 interface Props {
   departure: Departure;
   destination?: Destination;
   /** Primeira saída da lista ganha destaque visual. */
   featured?: boolean;
+  /** Destino do botão (padrão: página interna do destino nesta data). */
+  href?: string;
+  ctaLabel?: string;
 }
 
-const { departure: dep, destination, featured = false } = Astro.props;
+const {
+  departure: dep,
+  destination,
+  featured = false,
+  href = destinationPage(dep.destination, dep.id),
+  ctaLabel = 'Ver detalhes',
+} = Astro.props;
 const start = dateParts(dep.start);
 const end = dateParts(dep.end);
 const days = durationInDays(dep.start, dep.end);
@@ -84,12 +94,12 @@ const headingId = `saida-${dep.id}`;
               <strong>{formatPrice(dep.price)}</strong>
             </>
           ) : (
-            <span>Valores e vagas na página da viagem</span>
+            <span>Valor e vagas confirmados na reserva</span>
           )
         }
       </p>
-      <CTAButton href={storeLink(dep.url)} aria-label={`Ver viagem: ${dep.title}, saída em ${formatLong(dep.start)}`}>
-        Ver viagem
+      <CTAButton href={href} aria-label={`${ctaLabel}: ${dep.title}, saída em ${formatLong(dep.start)}`}>
+        {ctaLabel}
       </CTAButton>
     </div>
   </div>

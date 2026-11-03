@@ -1,0 +1,212 @@
+---
+/**
+ * Quem somos.
+ * Fontes: página "Quem somos" do site atual (início em agosto de 2019, slogan) e posts do
+ * Instagram @roadtrip021 (história, "mais de 15 mil pessoas", saídas do Rio e de São Paulo).
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/layout/PageHeader.astro';
+import CTAButton from '@/components/ui/CTAButton.astro';
+import Photo from '@/components/ui/Photo.astro';
+import { site } from '@/config/site';
+import { tripsPage, whatsappLink, withBase } from '@/lib/links';
+---
+
+<BaseLayout title="Quem somos · RoadTrip021" description={site.mission}>
+  <PageHeader
+    eyebrow="Quem somos"
+    title="A primeira viagem é pelo destino. As próximas são pelas <em>conexões</em>."
+    crumbs={[{ label: 'Início', href: withBase('/') }, { label: 'Quem somos' }]}
+  />
+
+  <section class="section" aria-labelledby="historia-title">
+    <div class="container story">
+      <div class="story__text">
+        <h2 id="historia-title" class="story__h2">Nossa história</h2>
+        <p>
+          Um dia, a gente só queria encontrar pessoas que topassem fazer uma trilha com a gente. No começo, nem os amigos
+          nem os nossos próprios familiares queriam ir.
+        </p>
+        <p>
+          Começamos com trilhas gratuitas pelo Rio de Janeiro. Depois vieram os bate-voltas, as viagens de fim de semana, a
+          primeira viagem aérea nacional e a primeira internacional.
+        </p>
+        <p>
+          Hoje temos viagens saindo do Rio e de São Paulo, e mais de 15 mil pessoas já viajaram com a RoadTrip021. A nossa
+          essência continua a mesma: conectar pessoas e viver novas experiências.
+        </p>
+
+        <blockquote class="story__quote">
+          <p>{site.mission}</p>
+        </blockquote>
+
+        <h2 class="story__h2">Como a gente viaja</h2>
+        <p>
+          Cuidamos de toda a logística e do roteiro para que você possa simplesmente aproveitar, conhecer gente nova e
+          viver experiências incríveis, mesmo começando a viagem sem conhecer ninguém.
+        </p>
+        <p class="story__slogan">{site.tagline}</p>
+      </div>
+
+      <div class="story__photos">
+        <div class="story__photo story__photo--a">
+          <Photo name="sobre-1" alt="Grupo de viajantes da RoadTrip021" sizes="(min-width: 64rem) 480px, 92vw" widths={[480, 800, 1000]} tone="lagoon" />
+        </div>
+        <div class="story__photo story__photo--b">
+          <Photo name="sobre-2" alt="Viajantes da RoadTrip021 em uma trilha" sizes="(min-width: 64rem) 240px, 45vw" widths={[320, 480]} tone="clay" />
+        </div>
+        <div class="story__photo story__photo--c">
+          <Photo name="sobre-3" alt="Momento de confraternização em uma viagem da RoadTrip021" sizes="(min-width: 64rem) 240px, 45vw" widths={[320, 480]} tone="ink" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="numbers surface-ink on-dark" aria-label="A RoadTrip021 em números">
+    <dl class="container numbers__grid">
+      <div>
+        <dt>início da nossa história</dt>
+        <dd>{site.since.year}</dd>
+      </div>
+      <div>
+        <dt>pessoas já viajaram com a gente</dt>
+        <dd>+15 mil</dd>
+      </div>
+      <div>
+        <dt>cidades de saída</dt>
+        <dd>RJ e SP</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section class="section" aria-labelledby="cta-title">
+    <div class="container cta">
+      <h2 id="cta-title" class="story__h2">Bora viver a próxima com a gente?</h2>
+      <div class="cta__actions">
+        <CTAButton href={tripsPage()} size="lg">Ver viagens</CTAButton>
+        <CTAButton href={whatsappLink()} variant="outline" size="lg" external>Falar no WhatsApp</CTAButton>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .story {
+    display: grid;
+    gap: clamp(2.5rem, 2rem + 3vw, 4rem);
+  }
+
+  @media (min-width: 64rem) {
+    .story {
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      align-items: start;
+    }
+  }
+
+  .story__text {
+    display: grid;
+    gap: 1rem;
+    max-width: 42rem;
+    font-size: var(--fs-lg);
+    line-height: 1.6;
+    color: var(--c-muted);
+  }
+
+  .story__h2 {
+    margin-top: 1rem;
+    font-size: clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem);
+    color: var(--c-ink);
+  }
+
+  .story__h2:first-child {
+    margin-top: 0;
+  }
+
+  .story__quote {
+    margin: 0.75rem 0;
+    padding-left: 1.25rem;
+    border-left: 3px solid var(--c-sun);
+    font-family: var(--font-display);
+    font-size: var(--fs-xl);
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--c-ink);
+  }
+
+  .story__slogan {
+    margin-top: 0.5rem;
+    font-family: var(--font-display);
+    font-size: var(--fs-h3);
+    font-weight: 750;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: var(--c-sun-deep);
+  }
+
+  .story__photos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .story__photo {
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    aspect-ratio: 4 / 5;
+  }
+
+  .story__photo--a {
+    grid-column: 1 / -1;
+    aspect-ratio: 4 / 3;
+  }
+
+  @media (min-width: 64rem) {
+    .story__photos {
+      position: sticky;
+      top: calc(var(--header-h) + 1.5rem);
+    }
+  }
+
+  .numbers {
+    padding-block: clamp(3rem, 2rem + 4vw, 5rem);
+  }
+
+  .numbers__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    gap: 2rem;
+  }
+
+  .numbers__grid div {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    gap: 0.35rem;
+  }
+
+  .numbers__grid dt {
+    font-size: var(--fs-sm);
+    color: var(--c-muted-dark);
+  }
+
+  .numbers__grid dd {
+    font-family: var(--font-display);
+    font-size: clamp(2.75rem, 2rem + 3vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--c-sun);
+  }
+
+  .cta {
+    display: grid;
+    justify-items: start;
+    gap: 1.5rem;
+  }
+
+  .cta__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+</style>

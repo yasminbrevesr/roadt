@@ -1,0 +1,116 @@
+---
+/**
+ * Cabeçalho das páginas internas: trilho de navegação, título e texto de apoio.
+ * Com `photo`, usa a foto de fundo (ou o espaço reservado, enquanto ela não existir).
+ * Conteúdo extra (ex.: dados da viagem) pode ser passado pelo slot.
+ */
+import Breadcrumbs from './Breadcrumbs.astro';
+import Photo from '@/components/ui/Photo.astro';
+
+interface Props {
+  title: string;
+  lead?: string;
+  eyebrow?: string;
+  crumbs: { label: string; href?: string }[];
+  photo?: { name: string; alt: string; position?: string };
+}
+
+const { title, lead, eyebrow, crumbs, photo } = Astro.props;
+---
+
+<section class:list={['phead', 'on-dark', { 'phead--photo': photo }]}>
+  {
+    photo && (
+      <>
+        <div class="phead__media">
+          <Photo
+            name={photo.name}
+            alt={photo.alt}
+            priority
+            sizes="100vw"
+            widths={[640, 960, 1280, 1600, 2000]}
+            pending="compact-mobile"
+            position={photo.position}
+          />
+        </div>
+        <div class="phead__shade" aria-hidden="true" />
+      </>
+    )
+  }
+  <div class="container phead__inner">
+    <Breadcrumbs items={crumbs} />
+    {eyebrow && <p class="phead__eyebrow">{eyebrow}</p>}
+    <h1 class="phead__title" set:html={title} />
+    {lead && <p class="phead__lead">{lead}</p>}
+    <slot />
+  </div>
+</section>
+
+<style>
+  .phead {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: var(--c-ink);
+    color: var(--c-paper);
+  }
+
+  .phead--photo {
+    display: grid;
+    min-height: clamp(26rem, 60svh, 38rem);
+  }
+
+  .phead__media {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    --pending-top: 1rem;
+    --pending-right: var(--gutter);
+  }
+
+  .phead__shade {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(to top, rgb(15 31 26 / 0.8) 0%, rgb(15 31 26 / 0.3) 50%, rgb(15 31 26 / 0.15) 100%),
+      linear-gradient(to right, rgb(15 31 26 / 0.4) 0%, rgb(15 31 26 / 0) 60%);
+  }
+
+  .phead__inner {
+    display: grid;
+    align-content: end;
+    justify-items: start;
+    gap: 1rem;
+    padding-block: clamp(2rem, 1.5rem + 2vw, 3rem) clamp(2.5rem, 1.75rem + 3vw, 4.5rem);
+  }
+
+  .phead__eyebrow {
+    margin-top: 0.5rem;
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--c-gold);
+  }
+
+  .phead__title {
+    max-width: 18ch;
+    font-size: clamp(2.5rem, 1.6rem + 3.6vw, 4.75rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+
+  .phead__title :global(em) {
+    font-style: normal;
+    color: var(--c-sun);
+  }
+
+  .phead__lead {
+    max-width: 40rem;
+    font-size: var(--fs-lg);
+    line-height: 1.5;
+    color: rgb(246 241 231 / 0.9);
+  }
+</style>

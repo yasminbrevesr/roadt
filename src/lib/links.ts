@@ -16,9 +16,28 @@ export function storeLink(path: string): string {
   return `${base}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
-/** Busca da loja Nuvemshop (ex.: /search/?q=Jalapão). */
-export function storeSearchLink(term: string): string {
-  return storeLink(`${storePaths.search}?q=${encodeURIComponent(term)}`);
+/** Filtros aceitos na página /viagens/ (via ?filtro=). */
+export type TripFilter = 'brasil' | 'internacional' | `${number}`;
+
+/** Página com todas as viagens, opcionalmente já filtrada e/ou rolando até uma seção. */
+export function tripsPage(filter?: TripFilter, hash?: string): string {
+  const query = filter ? `?filtro=${filter}` : '';
+  return withBase(`/viagens/${query}${hash ? `#${hash}` : ''}`);
+}
+
+/** Página de um destino; com `departureId`, já rola até aquela data. */
+export function destinationPage(slug: string, departureId?: string): string {
+  return withBase(`/viagens/${slug}/${departureId ? `#saida-${departureId}` : ''}`);
+}
+
+/** Página "Quem somos". */
+export function aboutPage(): string {
+  return withBase('/sobre/');
+}
+
+/** Documento legal oficial (hospedado na loja). */
+export function termsLink(): string {
+  return storeLink(storePaths.terms);
 }
 
 /** Link de conversa no WhatsApp oficial, com mensagem opcional pré-preenchida. */

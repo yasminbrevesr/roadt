@@ -1,9 +1,12 @@
 /**
- * Destinos apresentados na seção "Descubra nossas viagens".
+ * Destinos: seção "Descubra nossas viagens" e páginas /viagens/<slug>/.
  *
- * Fonte: páginas de produto públicas da loja Nuvemshop (levantamento de 03/11/2026).
- * `durationDays` vem das datas de uma saída real publicada para o destino
- * (ex.: Jalapão 02/04 → 07/04 = 6 dias). Quando não há duração confirmada, o campo fica vazio.
+ * Fontes:
+ * - Nome, local e duração: páginas de produto públicas da loja Nuvemshop (03/11/2026).
+ *   `durationDays` vem das datas de uma saída real publicada para o destino.
+ * - Descrição e itens incluídos: legendas de posts do Instagram @roadtrip021
+ *   (texto da própria marca, sem emojis e sem chamadas promocionais).
+ * Destinos sem texto verificado ficam sem descrição (a página mostra só os fatos).
  *
  * Foto: coloque o arquivo em src/assets/photos/<slug>.jpg (ou .png/.webp).
  * Sem foto, o card mostra um espaço reservado identificado.
@@ -20,8 +23,10 @@ export interface Destination {
   location: string;
   scope: Scope;
   durationDays?: number;
-  /** Termo usado na busca da loja para listar as saídas disponíveis do destino. */
-  searchTerm: string;
+  /** Parágrafos de apresentação (somente texto verificado). */
+  description?: string[];
+  /** Itens incluídos divulgados pela marca para o roteiro. */
+  includes?: string[];
   /** Card em destaque (ocupa duas colunas no desktop). */
   featured?: boolean;
   /** Texto alternativo da foto (acessibilidade). Ao incluir a foto real, descreva a cena. */
@@ -37,8 +42,8 @@ export const destinations: Destination[] = [
     location: 'Bahia',
     scope: 'brasil',
     durationDays: 6,
-    searchTerm: 'Bahia',
     featured: true,
+    description: ["Expedição pelo litoral sul da Bahia, passando por Caraíva, Arraial d'Ajuda e Trancoso."],
     imageAlt: 'Viagem da RoadTrip021 — Expedição Bahia',
   },
   {
@@ -48,8 +53,19 @@ export const destinations: Destination[] = [
     location: 'Bolívia + Chile',
     scope: 'internacional',
     durationDays: 8,
-    searchTerm: 'Uyuni',
     featured: true,
+    description: [
+      'Dois países na mesma viagem: vulcões, gêiseres, lagunas coloridas, céu estrelado e o maior salar do planeta.',
+      'Um roteiro de 8 dias para explorar o melhor do Deserto do Atacama e do Salar de Uyuni sem se preocupar com nada.',
+    ],
+    includes: [
+      'Passagens aéreas (com saída do Rio de Janeiro e de São Paulo)',
+      'Hospedagem com café da manhã',
+      'Expedição em veículo 4x4 pelo Salar de Uyuni',
+      'Transfer entre aeroportos, hotéis e travessia de fronteira',
+      'Guiamento especializado durante toda a viagem',
+      'Transfer durante os passeios',
+    ],
     imageAlt: 'Viagem da RoadTrip021 — Salar de Uyuni',
   },
   {
@@ -59,7 +75,6 @@ export const destinations: Destination[] = [
     location: 'Tocantins',
     scope: 'brasil',
     durationDays: 6,
-    searchTerm: 'Jalapão',
     imageAlt: 'Viagem da RoadTrip021 — Jalapão',
   },
   {
@@ -69,7 +84,7 @@ export const destinations: Destination[] = [
     location: 'Chile',
     scope: 'internacional',
     durationDays: 6,
-    searchTerm: 'Atacama',
+    description: ['Roteiro pelo Deserto do Atacama, no norte do Chile.'],
     imageAlt: 'Viagem da RoadTrip021 — Deserto do Atacama',
   },
   {
@@ -79,7 +94,18 @@ export const destinations: Destination[] = [
     location: 'Maranhão',
     scope: 'brasil',
     durationDays: 7,
-    searchTerm: 'Lençóis Maranhenses',
+    description: [
+      'Dunas infinitas, banhos de lagoa, pôr do sol inesquecível e cenários surreais.',
+      'Uma expedição para explorar o melhor dos Lençóis Maranhenses sem se preocupar com nada.',
+    ],
+    includes: [
+      'Passagens aéreas (com saída do Rio de Janeiro e de São Paulo)',
+      'Hospedagem com café da manhã',
+      'Passeios pelas dunas e lagoas',
+      'Transfer de ida e volta entre aeroporto e hotel',
+      'Guiamento especializado durante toda a expedição (guia local e acompanhamento RoadTrip021)',
+      'Transfer completo durante todos os passeios',
+    ],
     imageAlt: 'Viagem da RoadTrip021 — Lençóis Maranhenses',
   },
   {
@@ -88,7 +114,7 @@ export const destinations: Destination[] = [
     name: 'Machu Picchu',
     location: 'Peru',
     scope: 'internacional',
-    searchTerm: 'Machu Picchu',
+    description: ['Conheça Machu Picchu, uma das Sete Maravilhas do Mundo Moderno.'],
     imageAlt: 'Viagem da RoadTrip021 — Machu Picchu',
   },
   {
@@ -98,7 +124,10 @@ export const destinations: Destination[] = [
     location: 'Brasil',
     scope: 'brasil',
     durationDays: 6,
-    searchTerm: 'Amazônia',
+    description: [
+      'Uma aventura no coração da Amazônia: navegar pelos rios, nadar com os botos, conhecer cachoeiras incríveis e dormir em meio à floresta.',
+      'Tudo isso ao lado de pessoas que podem se tornar amigos para a vida inteira.',
+    ],
     imageAlt: 'Viagem da RoadTrip021 — Amazônia',
   },
   {
@@ -107,7 +136,6 @@ export const destinations: Destination[] = [
     name: 'Chapada Diamantina',
     location: 'Bahia',
     scope: 'brasil',
-    searchTerm: 'Chapada Diamantina',
     imageAlt: 'Viagem da RoadTrip021 — Chapada Diamantina',
   },
   {
@@ -117,7 +145,10 @@ export const destinations: Destination[] = [
     location: 'Minas Gerais',
     scope: 'brasil',
     durationDays: 4,
-    searchTerm: 'São Thomé',
+    description: [
+      'São Thomé das Letras é conhecida como a cidade mais mística do Brasil.',
+      'Um roteiro completo para viver experiências incríveis em um fim de semana, conhecer lugares surpreendentes e fazer novas amizades.',
+    ],
     imageAlt: 'Viagem da RoadTrip021 — São Thomé das Letras',
   },
   {
@@ -127,7 +158,6 @@ export const destinations: Destination[] = [
     location: 'Minas Gerais',
     scope: 'brasil',
     durationDays: 3,
-    searchTerm: 'Ibitipoca',
     imageAlt: 'Viagem da RoadTrip021 — Ibitipoca',
   },
 ];

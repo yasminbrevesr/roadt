@@ -4,8 +4,7 @@ import DepartureCard from '@/components/cards/DepartureCard.astro';
 import CTAButton from '@/components/ui/CTAButton.astro';
 import type { Departure } from '@/data/departures';
 import { findDestination } from '@/data/destinations';
-import { storePaths } from '@/config/site';
-import { storeLink } from '@/lib/links';
+import { tripsPage } from '@/lib/links';
 
 interface Props {
   index?: string;
@@ -18,7 +17,7 @@ const { index, upcoming, limit = 6 } = Astro.props;
 const list = upcoming.slice(0, limit);
 /** Em telas de 1 coluna (celular/tablet) mostramos menos cartões para a página não ficar longa demais. */
 const MOBILE_LIMIT = 4;
-const allTrips = storeLink(storePaths.allTrips);
+const allTrips = tripsPage(undefined, 'calendario');
 ---
 
 <section id="proximas-saidas" class="section upcoming surface-ink on-dark" aria-labelledby="saidas-title">
@@ -63,7 +62,7 @@ const allTrips = storeLink(storePaths.allTrips);
     }
 
     <p class="upcoming__note">
-      Preço, vagas e formas de pagamento aparecem na página de cada viagem, na nossa loja online.
+      Veja roteiro e datas na página de cada viagem. Preço, vagas e formas de pagamento são confirmados na reserva.
     </p>
   </div>
 </section>

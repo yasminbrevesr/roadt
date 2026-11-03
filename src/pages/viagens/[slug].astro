@@ -1,0 +1,344 @@
+---
+/**
+ * Página de um destino: apresentação, itens incluídos (quando divulgados pela marca),
+ * próximas datas e reserva.
+ * O botão "Reservar" leva à página de pagamento da loja (Nuvemshop) daquela data;
+ * é o único passo que sai do site, para preservar o checkout existente.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/layout/PageHeader.astro';
+import CTAButton from '@/components/ui/CTAButton.astro';
+import TravelCard from '@/components/cards/TravelCard.astro';
+import { destinations, findDestination, scopeLabels, type Destination } from '@/data/destinations';
+import { upcomingDepartures } from '@/data/departures';
+import { durationInDays, formatLong, formatPrice, formatRange, todayISO } from '@/lib/dates';
+import { destinationPage, storeLink, tripsPage, whatsappLink, withBase } from '@/lib/links';
+
+export function getStaticPaths() {
+  return destinations.map((d) => ({ params: { slug: d.slug } }));
+}
+
+const { slug } = Astro.params;
+const dest = findDestination(slug!) as Destination;
+const upcoming = upcomingDepartures(todayISO());
+const dates = upcoming.filter((d) => d.destination === dest.slug);
+const nextFor = (s: string) => upcoming.find((d) => d.destination === s);
+
+// Outros destinos: primeiro os da mesma região (Brasil / América do Sul), depois os demais.
+const others = [
+  ...destinations.filter((d) => d.slug !== dest.slug && d.scope === dest.scope),
+  ...destinations.filter((d) => d.slug !== dest.slug && d.scope !== dest.scope),
+].slice(0, 3);
+
+const whatsappMessage = dates.length
+  ? `Olá! Quero saber mais sobre a viagem ${dest.name}.`
+  : `Olá! Quero ser avisado(a) das próximas datas da viagem ${dest.name}.`;
+
+const description =
+  dest.description?.[0] ??
+  `${dest.name} (${dest.location}) com a RoadTrip021: viagem em grupo. Veja as próximas datas e reserve sua vaga.`;
+---
+
+<BaseLayout title={`${dest.name} · Viagem em grupo · RoadTrip021`} description={description}>
+  <PageHeader
+    title={dest.name}
+    lead={dest.subtitle}
+    eyebrow={`${dest.location} · ${scopeLabels[dest.scope]}`}
+    crumbs={[{ label: 'Início', href: withBase('/') }, { label: 'Viagens', href: tripsPage() }, { label: dest.name }]}
+    photo={{ name: dest.slug, alt: dest.imageAlt }}
+  >
+    <ul class="facts">
+      {
+        dest.durationDays && (
+          <li>
+            <strong>{dest.durationDays}</strong> dias
+          </li>
+        )
+      }
+      {
+        dates.length > 0 && (
+          <li>
+            <strong>{dates.length}</strong> {dates.length === 1 ? 'próxima data' : 'próximas datas'}
+          </li>
+        )
+      }
+    </ul>
+    <CTAButton href="#datas" size="lg">{dates.length ? 'Ver datas e reservar' : 'Ver disponibilidade'}</CTAButton>
+  </PageHeader>
+
+  <section class="section">
+    <div class="container trip">
+      <div class="trip__main">
+        <h2 class="trip__h2">Sobre a viagem</h2>
+        {
+          dest.description ? (
+            dest.description.map((p) => <p class="trip__p">{p}</p>)
+          ) : (
+            <p class="trip__p">
+              Quer receber o roteiro completo desta viagem? Fale com a gente pelo WhatsApp oficial e tire todas as suas
+              dúvidas antes de reservar.
+            </p>
+          )
+        }
+
+        {
+          dest.includes && (
+            <>
+              <h2 class="trip__h2">O que está incluído</h2>
+              <ul class="checklist">
+                {dest.includes.map((item) => (
+                  <li>{item}</li>
+                ))}
+              </ul>
+              <p class="trip__note">
+                Itens divulgados pela RoadTrip021 para este roteiro. Confirme o que está incluído em cada data no momento da
+                reserva.
+              </p>
+            </>
+          )
+        }
+
+        <h2 class="trip__h2">Viagem em grupo</h2>
+        <p class="trip__p">
+          Na RoadTrip021, você viaja junto com pessoas que também querem conhecer novos lugares e fazer novas amizades,
+          mesmo começando a viagem sem conhecer ninguém.
+        </p>
+      </div>
+
+      <aside id="datas" class="book" aria-labelledby="datas-title">
+        <h2 id="datas-title" class="book__title">Próximas datas</h2>
+        {
+          dates.length > 0 ? (
+            <ul class="book__list">
+              {dates.map((dep) => (
+                <li id={`saida-${dep.id}`} class="book__row" data-departure-item data-start={dep.start}>
+                  <div class="book__info">
+                    <p class="book__dates">
+                      <time datetime={dep.start}>{formatRange(dep.start, dep.end)}</time>
+                    </p>
+                    <p class="book__meta">
+                      {durationInDays(dep.start, dep.end)} dias
+                      {dep.note && <> · {dep.note}</>}
+                      {dep.price && <> · a partir de {formatPrice(dep.price)}</>}
+                    </p>
+                  </div>
+                  <CTAButton
+                    href={storeLink(dep.url)}
+                    aria-label={`Reservar ${dest.name}, saída em ${formatLong(dep.start)}`}
+                  >
+                    Reservar
+                  </CTAButton>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p class="book__empty">No momento não há datas publicadas para este destino.</p>
+          )
+        }
+        {
+          dates.length > 0 && (
+            <p class="book__note">
+              Ao clicar em Reservar, você segue para a página de pagamento da RoadTrip021, onde confere valor, vagas e
+              formas de pagamento.
+            </p>
+          )
+        }
+        <CTAButton href={whatsappLink(whatsappMessage)} variant="outline" block external>
+          {dates.length ? 'Tirar dúvidas no WhatsApp' : 'Quero ser avisado(a)'}
+        </CTAButton>
+      </aside>
+    </div>
+  </section>
+
+  <section class="section surface-sand" aria-labelledby="outros-title">
+    <div class="container">
+      <div class="others__head">
+        <h2 id="outros-title" class="trip__h2 others__title">Outros destinos</h2>
+        <CTAButton href={tripsPage()} variant="outline">Ver todas as viagens</CTAButton>
+      </div>
+      <ul class="card-rail" data-dest-grid>
+        {
+          others.map((d) => (
+            <li>
+              <TravelCard destination={d} href={destinationPage(d.slug)} nextDeparture={nextFor(d.slug)} />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.75rem;
+    margin: 0.25rem 0 0.75rem;
+    padding: 0;
+    list-style: none;
+    font-size: var(--fs-sm);
+    color: rgb(246 241 231 / 0.9);
+  }
+
+  .facts strong {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    letter-spacing: -0.03em;
+    color: var(--c-paper);
+  }
+
+  /* ---------- Conteúdo + reserva ---------- */
+  .trip {
+    display: grid;
+    gap: clamp(2.5rem, 2rem + 3vw, 4rem);
+  }
+
+  @media (min-width: 64rem) {
+    .trip {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
+      align-items: start;
+    }
+  }
+
+  .trip__main {
+    display: grid;
+    align-content: start;
+    gap: 1rem;
+    max-width: 44rem;
+  }
+
+  .trip__h2 {
+    margin-top: 1rem;
+    font-size: clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem);
+  }
+
+  .trip__h2:first-child {
+    margin-top: 0;
+  }
+
+  .trip__p {
+    font-size: var(--fs-lg);
+    line-height: 1.6;
+    color: var(--c-muted);
+  }
+
+  .checklist {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .checklist li {
+    position: relative;
+    padding-left: 1.75rem;
+    font-size: var(--fs-base);
+    line-height: 1.5;
+  }
+
+  /* marcador gráfico simples (sem ícone/emoji) */
+  .checklist li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 0.9rem;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--c-sun);
+  }
+
+  .trip__note {
+    font-size: var(--fs-sm);
+    color: var(--c-muted);
+  }
+
+  .book {
+    display: grid;
+    gap: 1.25rem;
+    padding: clamp(1.5rem, 1.25rem + 1vw, 2rem);
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius-lg);
+    background: #fffdf8;
+    box-shadow: var(--shadow-card);
+    scroll-margin-top: calc(var(--header-h) + 1rem);
+  }
+
+  @media (min-width: 64rem) {
+    .book {
+      position: sticky;
+      top: calc(var(--header-h) + 1.5rem);
+    }
+  }
+
+  .book__title {
+    font-size: 1.75rem;
+  }
+
+  .book__list {
+    display: grid;
+    padding: 0;
+    list-style: none;
+  }
+
+  .book__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    padding: 1rem 0.75rem;
+    margin-inline: -0.75rem;
+    border-bottom: 1px solid var(--c-line);
+    border-radius: var(--radius-sm);
+    scroll-margin-top: calc(var(--header-h) + 2rem);
+    transition: background-color var(--dur) var(--ease-out);
+  }
+
+  .book__row:first-child {
+    border-top: 1px solid var(--c-line);
+  }
+
+  /* Data escolhida a partir de outra página (link com #saida-...) */
+  .book__row:target {
+    background: rgb(255 91 36 / 0.1);
+    box-shadow: inset 3px 0 0 var(--c-sun);
+  }
+
+  .book__dates {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .book__meta {
+    font-size: var(--fs-sm);
+    color: var(--c-muted);
+  }
+
+  .book__note,
+  .book__empty {
+    font-size: var(--fs-sm);
+    color: var(--c-muted);
+  }
+
+  .book__empty {
+    font-size: var(--fs-base);
+  }
+
+  /* ---------- Outros destinos ---------- */
+  .others__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+    margin-bottom: clamp(1.75rem, 1.25rem + 2vw, 2.75rem);
+  }
+
+  .others__title {
+    margin: 0;
+  }
+</style>

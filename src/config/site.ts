@@ -77,20 +77,12 @@ export const site = {
   allowIndexing: false,
 } as const;
 
-/** Caminhos das páginas existentes na loja Nuvemshop (verificados nos resultados públicos). */
+/**
+ * Páginas da loja Nuvemshop que continuam sendo usadas.
+ * A navegação de viagens é interna (páginas /viagens/); a loja recebe apenas a
+ * reserva/pagamento (URL de cada saída em departures.ts) e o documento legal abaixo.
+ */
 export const storePaths = {
-  allTrips: '/viagens',
-  departuresRio: '/viagens/saidas-rio-de-janeiro1/',
-  departuresSaoPaulo: '/viagens/saidas-sao-paulo1/',
-  internationalFlights: '/viagens/viagens-aereas-internacionais/',
-  year2026: '/viagens/2026/',
-  year2027: '/viagens/2027/',
-  about: '/quem-somos/',
-  contact: '/contato/',
+  /** Termos de Uso e Política de Cancelamento (documento legal oficial). */
   terms: '/termos-de-adesao/',
-  /**
-   * Busca da loja (rota padrão da Nuvemshop, parâmetro "q"). Usada no botão "Ver saídas"
-   * de cada destino. VALIDAR no site publicado; se não funcionar, troque por '/viagens'.
-   */
-  search: '/search/',
 } as const;

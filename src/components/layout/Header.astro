@@ -8,10 +8,10 @@ import Logo from '@/components/ui/Logo.astro';
 import Icon from '@/components/ui/Icon.astro';
 import CTAButton from '@/components/ui/CTAButton.astro';
 import { mainNav } from '@/data/navigation';
-import { site, storePaths } from '@/config/site';
-import { storeLink, whatsappLink, withBase } from '@/lib/links';
+import { site } from '@/config/site';
+import { tripsPage, whatsappLink, withBase } from '@/lib/links';
 
-const allTrips = storeLink(storePaths.allTrips);
+const allTrips = tripsPage();
 const home = withBase('/');
 ---
 
