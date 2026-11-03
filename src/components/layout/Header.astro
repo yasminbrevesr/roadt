@@ -10,7 +10,7 @@ import Icon from '@/components/ui/Icon.astro';
 import CTAButton from '@/components/ui/CTAButton.astro';
 import { mainNav } from '@/data/navigation';
 import { site, storePaths } from '@/config/site';
-import { storeLink, whatsappLink } from '@/lib/links';
+import { storeLink, whatsappLink, withBase } from '@/lib/links';
 
 interface Props {
   /** true quando o cabeçalho fica sobre uma imagem escura (hero). */
@@ -19,11 +19,12 @@ interface Props {
 
 const { overlay = false } = Astro.props;
 const allTrips = storeLink(storePaths.allTrips);
+const home = withBase('/');
 ---
 
 <header class:list={['site-header', { 'is-overlay': overlay }]} data-header>
   <div class="site-header__inner container">
-    <a href="/" class="site-header__brand" aria-label={`${site.name} — página inicial`}>
+    <a href={home} class="site-header__brand" aria-label={`${site.name} — página inicial`}>
       <Logo />
     </a>
 
@@ -58,7 +59,7 @@ const allTrips = storeLink(storePaths.allTrips);
 
 <dialog id="mobile-menu" class="mmenu on-dark" aria-label="Menu" data-menu>
   <div class="mmenu__top container">
-    <a href="/" class="site-header__brand" aria-label={`${site.name} — página inicial`} data-menu-link>
+    <a href={home} class="site-header__brand" aria-label={`${site.name} — página inicial`} data-menu-link>
       <Logo />
     </a>
     <button type="button" class="mmenu__close" data-menu-close>

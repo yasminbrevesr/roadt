@@ -1,5 +1,5 @@
 import { storePaths } from '@/config/site';
-import { storeLink } from '@/lib/links';
+import { storeLink, withBase } from '@/lib/links';
 
 export interface NavItem {
   label: string;
@@ -8,11 +8,11 @@ export interface NavItem {
 
 /** Menu principal (âncoras da homepage). */
 export const mainNav: NavItem[] = [
-  { label: 'Viagens', href: '/#viagens' },
-  { label: 'Próximas saídas', href: '/#proximas-saidas' },
-  { label: 'Sobre nós', href: '/#sobre' },
-  { label: 'Dúvidas', href: '/#duvidas' },
-  { label: 'Contato', href: '/#contato' },
+  { label: 'Viagens', href: withBase('/#viagens') },
+  { label: 'Próximas saídas', href: withBase('/#proximas-saidas') },
+  { label: 'Sobre nós', href: withBase('/#sobre') },
+  { label: 'Dúvidas', href: withBase('/#duvidas') },
+  { label: 'Contato', href: withBase('/#contato') },
 ];
 
 /** Atalhos para as categorias reais da loja. */

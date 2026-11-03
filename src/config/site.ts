@@ -68,6 +68,13 @@ export const site = {
    * Desligue (false) quando todas as fotos e avaliações tiverem sido incluídas.
    */
   showPendingMarkers: true,
+
+  /**
+   * Permite que buscadores (Google) indexem o site.
+   * Mantenha false enquanto o site for uma prévia (fotos pendentes / endereço provisório
+   * no GitHub Pages). Mude para true quando publicar no domínio definitivo.
+   */
+  allowIndexing: false,
 } as const;
 
 /** Caminhos das páginas existentes na loja Nuvemshop (verificados nos resultados públicos). */

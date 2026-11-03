@@ -126,19 +126,51 @@ onde faltava informação verificada, o site deixa o espaço preparado.
 - [ ] **Imagem de compartilhamento** (1200×630) em `public/og-image.jpg` e informar em `site.seo.ogImage`.
 - [ ] **Revisar textos** institucionais e do FAQ com a equipe.
 - [ ] Ao concluir tudo, **desligar as etiquetas de pendência**: `showPendingMarkers: false` em `src/config/site.ts`.
+- [ ] Ao publicar no endereço definitivo, **liberar o Google**: `allowIndexing: true` em `src/config/site.ts`
+      (enquanto estiver `false`, o site pede aos buscadores para não indexá-lo).
 
 ---
 
 ## Publicação (deploy)
 
-O comando `npm run build` gera um site **estático** na pasta `dist/`, que pode ser publicado
-em qualquer hospedagem estática (Vercel, Netlify, Cloudflare Pages, GitHub Pages etc.).
+O site é publicado no **GitHub Pages** pelo workflow
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). Ele instala as dependências,
+gera o site, roda os testes automatizados e **só publica se tudo passar**.
 
-Configuração típica (Vercel / Netlify / Cloudflare Pages):
+Endereço: **https://yasminbrevesr.github.io/roadt/**
 
-- Comando de build: `npm run build`
-- Pasta de saída: `dist`
-- Variável de ambiente: `PUBLIC_SITE_URL` = endereço final do site (ex.: `https://www.roadtrip021.com.br`)
+### Ativar (uma única vez)
+
+1. No GitHub, abra o repositório → **Settings** → **Pages**.
+2. Em **Build and deployment → Source**, escolha **GitHub Actions**.
+
+### Publicar
+
+- **Automático:** todo push (ou merge de pull request) na branch `main` publica o site.
+- **Manual:** aba **Actions** → **Publicar no GitHub Pages** → **Run workflow** → escolha a branch → **Run workflow**.
+
+Acompanhe na aba **Actions**. Ao final, o link do site aparece no passo **Publicar**.
+Se algum teste falhar, nada é publicado e as capturas de tela ficam disponíveis no
+artefato **capturas-de-tela** da execução.
+
+### Endereço com subcaminho (`/roadt/`)
+
+Sem domínio próprio, o GitHub Pages serve o site em `/roadt/`. O workflow informa isso
+automaticamente ao build (`PUBLIC_SITE_URL` e `PUBLIC_BASE_PATH`), e todos os links internos
+usam `withBase()` (`src/lib/links.ts`). Ao criar novos links internos, use sempre `withBase('/...')`.
+
+### Domínio próprio (opcional)
+
+1. **Settings → Pages → Custom domain**: informe o domínio (ex.: `site.roadtrip021.com.br`) e salve.
+2. No provedor de DNS, crie um registro **CNAME** apontando para `yasminbrevesr.github.io`.
+3. Rode o workflow novamente. O site passa a funcionar na raiz do domínio sem mudar código
+   (o subcaminho some automaticamente).
+
+### Outras hospedagens
+
+`npm run build` gera um site estático em `dist/`, que também pode ir para Vercel, Netlify,
+Cloudflare Pages etc. (comando `npm run build`, pasta `dist`, variável `PUBLIC_SITE_URL`
+com o endereço final e, se houver subcaminho, `PUBLIC_BASE_PATH`).
 
 ### ⚠️ Atenção ao domínio (decisão de negócio)
 
@@ -170,7 +202,8 @@ O teste abre o site em 8 tamanhos de tela (320 px a 1920 px) e verifica:
 
 - erros de JavaScript/console e arquivos que não carregaram;
 - rolagem horizontal indevida;
-- links vazios, âncoras quebradas e links externos sem `rel="noopener"`;
+- links vazios, âncoras quebradas, links internos que não abrem (inclusive no subcaminho `/roadt/`)
+  e links externos sem `rel="noopener"`;
 - imagens sem texto alternativo e estrutura de títulos;
 - menu mobile (abrir, fechar com ESC, fechar ao clicar), filtros de destinos e FAQ;
 - acessibilidade automática (axe-core, WCAG 2.1 AA);

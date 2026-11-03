@@ -2,7 +2,7 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import CTAButton from '@/components/ui/CTAButton.astro';
 import { storePaths } from '@/config/site';
-import { storeLink } from '@/lib/links';
+import { storeLink, withBase } from '@/lib/links';
 ---
 
 <BaseLayout title="Página não encontrada · RoadTrip021" noindex>
@@ -12,7 +12,7 @@ import { storeLink } from '@/lib/links';
       <h1 class="nf__title">Essa rota não existe.</h1>
       <p class="lead">A página que você procura mudou de lugar ou nunca existiu. Que tal escolher um novo destino?</p>
       <div class="nf__actions">
-        <CTAButton href="/" size="lg" trailingIcon={null}>Voltar ao início</CTAButton>
+        <CTAButton href={withBase('/')} size="lg" trailingIcon={null}>Voltar ao início</CTAButton>
         <CTAButton href={storeLink(storePaths.allTrips)} variant="outline" size="lg" trailingIcon="arrow-up-right">
           Ver viagens
         </CTAButton>

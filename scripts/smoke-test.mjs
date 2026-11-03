@@ -6,7 +6,8 @@
  * Verifica, em vários tamanhos de tela:
  *  - erros no console / JavaScript e arquivos que não carregaram;
  *  - rolagem horizontal indevida;
- *  - links vazios, âncoras quebradas e links externos sem rel="noopener";
+ *  - links vazios, âncoras quebradas, links internos que não abrem (inclusive com
+ *    subcaminho, como /roadt/ no GitHub Pages) e links externos sem rel="noopener";
  *  - imagens sem texto alternativo e estrutura de títulos (um único <h1>);
  *  - menu mobile, filtros de destinos e FAQ funcionando;
  *  - acessibilidade automática (axe-core, WCAG 2.1 AA).
@@ -18,14 +19,31 @@
 import { spawn } from 'node:child_process';
 import { mkdir, readFile, access } from 'node:fs/promises';
 import { createRequire } from 'node:module';
+import { createServer } from 'node:net';
 import path from 'node:path';
 import { chromium } from 'playwright';
 
 const require = createRequire(import.meta.url);
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
-const PORT = Number(process.env.SMOKE_PORT || 4329);
+/** Porta livre escolhida na hora (evita conflito com outro servidor aberto). */
+async function freePort() {
+  return new Promise((resolve, reject) => {
+    const srv = createServer();
+    srv.unref();
+    srv.on('error', reject);
+    srv.listen(0, '127.0.0.1', () => {
+      const { port } = srv.address();
+      srv.close(() => resolve(port));
+    });
+  });
+}
+
+const PORT = Number(process.env.SMOKE_PORT) || (await freePort());
 const BASE = `http://127.0.0.1:${PORT}`;
 const SHOTS = path.join(ROOT, 'test-results', 'screens');
+/** Subcaminho do build (ex.: '/roadt'), lido do <link rel="canonical"> gerado. */
+let BASE_PATH = '';
+let HOME = `${BASE}/`;
 
 const VIEWPORTS = [
   { name: 'mobile-320', width: 320, height: 640, mobile: true },
@@ -50,22 +68,41 @@ async function startPreview() {
     console.error('dist/ não encontrado. Rode "npm run build" antes de "npm test".');
     process.exit(1);
   }
+  const html = await readFile(path.join(ROOT, 'dist', 'index.html'), 'utf8');
+  const canonical = html.match(/<link rel="canonical" href="([^"]+)"/)?.[1];
+  BASE_PATH = canonical ? new URL(canonical).pathname.replace(/\/+$/, '') : '';
+  HOME = `${BASE}${BASE_PATH}/`;
+  const origin = canonical ? new URL(canonical).origin : undefined;
+  console.log(`Testando o build em ${BASE_PATH || '/'} (canonical: ${canonical})`);
   const astroBin = path.join(ROOT, 'node_modules', '.bin', 'astro');
-  const proc = spawn(astroBin, ['preview', '--host', '127.0.0.1', '--port', String(PORT)], {
+  // O preview precisa servir no mesmo subcaminho usado no build.
+  // --ignore-lock: sempre sobe um servidor próprio (não reaproveita outro já aberto).
+  // detached: cria um grupo de processos para encerrar o servidor por completo no final.
+  const proc = spawn(astroBin, ['preview', '--host', '127.0.0.1', '--port', String(PORT), '--ignore-lock'], {
     cwd: ROOT,
-    stdio: ['ignore', 'pipe', 'pipe'],
+    stdio: 'ignore',
+    detached: true,
+    env: { ...process.env, PUBLIC_BASE_PATH: BASE_PATH, ...(origin && { PUBLIC_SITE_URL: origin }) },
   });
   for (let i = 0; i < 60; i++) {
     try {
-      const res = await fetch(BASE);
+      const res = await fetch(HOME);
       if (res.ok) return proc;
     } catch {
       /* aguardando o servidor */
     }
     await new Promise((r) => setTimeout(r, 250));
   }
-  proc.kill();
+  stopPreview(proc);
   throw new Error('O servidor de preview não respondeu.');
+}
+
+function stopPreview(proc) {
+  try {
+    process.kill(-proc.pid, 'SIGTERM'); // encerra o grupo inteiro (processo + filhos)
+  } catch {
+    proc.kill('SIGTERM');
+  }
 }
 
 async function checkPage(browser, vp, axeSource) {
@@ -88,7 +125,7 @@ async function checkPage(browser, vp, axeSource) {
     if (r.url().startsWith(BASE) && r.status() >= 400) errors.push(`HTTP ${r.status()}: ${r.url()}`);
   });
 
-  await page.goto(BASE + '/', { waitUntil: 'networkidle' });
+  await page.goto(HOME, { waitUntil: 'networkidle' });
 
   // 1) Rolagem horizontal
   const overflow = await page.evaluate(() => {
@@ -119,23 +156,37 @@ async function checkPage(browser, vp, axeSource) {
       if (!el.getAttribute('aria-label')) issues.push(`role=img sem aria-label: ${el.className}`);
     });
     const external = new Set();
+    const internal = new Set();
     document.querySelectorAll('a').forEach((a) => {
       const href = a.getAttribute('href');
-      if (!href || href === '#') issues.push(`link sem destino: "${a.textContent.trim().slice(0, 40)}"`);
-      else if (href.startsWith('#') || href.startsWith('/#')) {
-        const id = href.split('#')[1];
-        if (id && !document.getElementById(id)) issues.push(`âncora quebrada: ${href}`);
-      } else if (/^https?:/.test(href)) {
+      if (!href || href === '#') {
+        issues.push(`link sem destino: "${a.textContent.trim().slice(0, 40)}"`);
+        return;
+      }
+      const url = new URL(href, location.href);
+      if (url.origin === location.origin) {
+        if (url.pathname === location.pathname && url.hash) {
+          const id = decodeURIComponent(url.hash.slice(1));
+          if (!document.getElementById(id)) issues.push(`âncora quebrada: ${href}`);
+        } else {
+          internal.add(url.pathname);
+        }
+      } else if (/^https?:/.test(url.protocol)) {
         external.add(href.split('?')[0]);
         if (a.target === '_blank' && !/noopener/.test(a.rel)) issues.push(`link externo sem noopener: ${href}`);
       }
     });
+    document.querySelectorAll('link[rel="icon"]').forEach((l) => internal.add(new URL(l.href).pathname));
     document.querySelectorAll('button').forEach((b) => {
       const name = (b.getAttribute('aria-label') || b.textContent || '').trim();
       if (!name) issues.push('botão sem nome acessível');
     });
-    return { issues, external: [...external] };
+    return { issues, external: [...external], internal: [...internal] };
   });
+  for (const pathname of audit.internal) {
+    const res = await fetch(BASE + pathname);
+    if (!res.ok) audit.issues.push(`link interno não abre (${res.status}): ${pathname}`);
+  }
   audit.issues.forEach((i) => fail(`[${vp.name}] ${i}`));
   if (!audit.issues.length) ok('títulos, imagens, links e botões consistentes');
 
@@ -148,13 +199,19 @@ async function checkPage(browser, vp, axeSource) {
     if (!open || expanded !== 'true') fail(`[${vp.name}] menu mobile não abriu`);
     if (vp.name === 'mobile-375') await page.screenshot({ path: path.join(SHOTS, `${vp.name}-menu.png`) });
     await page.keyboard.press('Escape');
-    const closed = await page.evaluate(() => !document.querySelector('[data-menu]')?.open);
+    // O navegador processa o ESC de forma assíncrona: espera até 2s pelo fechamento.
+    const closed = await page
+      .waitForFunction(() => !document.querySelector('[data-menu]')?.open, null, { timeout: 2000 })
+      .then(() => true)
+      .catch(() => false);
     if (!closed || (await toggle.getAttribute('aria-expanded')) !== 'false') fail(`[${vp.name}] menu não fechou com ESC`);
     // fecha ao clicar em um link
     await toggle.click();
-    await page.locator('[data-menu] a[href="/#duvidas"]').click();
-    await page.waitForTimeout(150);
-    const closedByLink = await page.evaluate(() => !document.querySelector('[data-menu]')?.open);
+    await page.locator('[data-menu] a[href$="#duvidas"]').click();
+    const closedByLink = await page
+      .waitForFunction(() => !document.querySelector('[data-menu]')?.open, null, { timeout: 2000 })
+      .then(() => true)
+      .catch(() => false);
     if (!closedByLink) fail(`[${vp.name}] menu não fechou ao escolher um link`);
     if (!page.url().endsWith('#duvidas')) fail(`[${vp.name}] link do menu não navegou para #duvidas`);
     ok('menu mobile abre, fecha (ESC e link) e navega');
@@ -212,7 +269,7 @@ async function checkPage(browser, vp, axeSource) {
 
 async function check404(browser) {
   const page = await browser.newPage();
-  const res = await page.goto(BASE + '/pagina-que-nao-existe');
+  const res = await page.goto(`${BASE}${BASE_PATH}/pagina-que-nao-existe`);
   const h1 = await page.locator('h1').textContent();
   if (res?.status() !== 404 || !h1?.includes('rota')) fail(`página 404 não exibida corretamente (status ${res?.status()})`);
   else ok('página 404 personalizada');
@@ -238,7 +295,7 @@ try {
 } catch (err) {
   fail(String(err?.stack || err));
 } finally {
-  preview.kill();
+  stopPreview(preview);
 }
 
 if (warnings.length) {

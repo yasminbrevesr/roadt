@@ -6,6 +6,7 @@ import '@/styles/global.css';
 import Header from '@/components/layout/Header.astro';
 import Footer from '@/components/layout/Footer.astro';
 import { site } from '@/config/site';
+import { withBase } from '@/lib/links';
 
 interface Props {
   title?: string;
@@ -19,7 +20,10 @@ const { title = site.seo.title, description = site.seo.description, headerOverla
   Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
-const ogImage = site.seo.ogImage ? new URL(site.seo.ogImage, Astro.site).href : undefined;
+const homeUrl = new URL(withBase('/'), Astro.site).href;
+const ogImage = site.seo.ogImage ? new URL(withBase(site.seo.ogImage), Astro.site).href : undefined;
+// Enquanto o site for uma prévia (ex.: GitHub Pages com fotos pendentes), não aparece no Google.
+const blockIndexing = noindex || !site.allowIndexing;
 
 const structuredData = {
   '@context': 'https://schema.org',
@@ -27,7 +31,7 @@ const structuredData = {
   name: site.name,
   slogan: site.tagline,
   description: site.mission,
-  url: Astro.site?.href,
+  url: homeUrl,
   foundingDate: String(site.since.year),
   areaServed: 'BR',
   sameAs: [site.instagram.url],
@@ -48,9 +52,9 @@ const structuredData = {
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    {noindex && <meta name="robots" content="noindex" />}
+    {blockIndexing && <meta name="robots" content="noindex" />}
     <meta name="theme-color" content="#0f1f1a" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
 
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="pt_BR" />

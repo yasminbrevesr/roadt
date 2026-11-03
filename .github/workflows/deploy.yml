@@ -1,0 +1,87 @@
+# Publica o site no GitHub Pages.
+#
+# Quando roda:
+#  - a cada push na branch "main";
+#  - manualmente, na aba Actions → "Publicar no GitHub Pages" → "Run workflow".
+#
+# O que faz: instala as dependências, gera o site (com verificação de tipos),
+# roda os testes automatizados e só publica se tudo passar.
+#
+# Pré-requisito (uma vez): Settings → Pages → Build and deployment → Source: "GitHub Actions".
+name: Publicar no GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Uma publicação por vez; não cancela uma publicação já em andamento.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build e testes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v7
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Ler configuração do GitHub Pages
+        id: pages
+        uses: actions/configure-pages@v6
+
+      - name: Instalar dependências
+        run: npm ci
+
+      # Endereço e subcaminho vêm do próprio GitHub Pages
+      # (ex.: https://yasminbrevesr.github.io + /roadt, ou o domínio próprio, se configurado).
+      - name: Gerar o site
+        run: npm run build
+        env:
+          PUBLIC_SITE_URL: ${{ steps.pages.outputs.origin }}
+          PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+
+      - name: Instalar navegador dos testes
+        run: npx playwright install --with-deps chromium
+
+      - name: Rodar testes
+        run: npm test
+
+      - name: Guardar capturas de tela dos testes
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: capturas-de-tela
+          path: test-results/screens
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Preparar arquivos para o Pages
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    name: Publicar
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publicar no GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

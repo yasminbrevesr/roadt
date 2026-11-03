@@ -3,7 +3,7 @@ import Logo from '@/components/ui/Logo.astro';
 import Icon from '@/components/ui/Icon.astro';
 import { legalLinks, mainNav, storeShortcuts } from '@/data/navigation';
 import { site } from '@/config/site';
-import { whatsappLink } from '@/lib/links';
+import { whatsappLink, withBase } from '@/lib/links';
 
 const year = new Date().getFullYear();
 const { companyName, cnpj, address } = site.legal;
@@ -13,7 +13,7 @@ const { companyName, cnpj, address } = site.legal;
   <h2 id="footer-title" class="visually-hidden">Rodapé</h2>
   <div class="container">
     <div class="site-footer__top">
-      <a href="/" class="site-footer__brand" aria-label={`${site.name} — página inicial`}>
+      <a href={withBase('/')} class="site-footer__brand" aria-label={`${site.name} — página inicial`}>
         <Logo />
       </a>
       <p class="site-footer__tagline">{site.tagline}</p>
