@@ -1,6 +1,7 @@
 ---
 /**
- * Topo da página: foto (ou carrossel de fotos) em tela cheia com chamada principal.
+ * Topo da página: chamada principal à esquerda e foto (ou carrossel) à direita, em uma
+ * moldura no tamanho em que as fotos atuais ficam nítidas (sem esticar a imagem).
  * - Usa só as fotos que já existem em src/assets/photos. Com uma foto, ela fica fixa;
  *   com duas ou mais, vira carrossel. Sem nenhuma, mostra um espaço reservado.
  * - As fotos trocam sozinhas (com transição suave) e podem ser escolhidas pelos indicadores.
@@ -29,70 +30,72 @@ const tones = ['ink', 'lagoon', 'clay'] as const;
   data-interval={HERO_INTERVAL_MS}
   style={`--hero-interval:${HERO_INTERVAL_MS}ms`}
 >
-  <div class="hero__slides" aria-live="off">
-    {
-      heroSlides.map((slide, i) => (
-        <figure
-          class:list={['hero__slide', { 'is-active': i === 0, 'is-dormant': i > 0 }]}
-          data-slide={i}
-          role="group"
-          aria-roledescription="slide"
-          aria-label={`${i + 1} de ${total}`}
-          aria-hidden={i === 0 ? 'false' : 'true'}
-        >
-          <Photo
-            name={slide.photo}
-            alt={slide.alt}
-            priority={i === 0}
-            sizes="100vw"
-            widths={[640, 960, 1280, 1600, 2000, 2560]}
-            tone={tones[i % tones.length]}
-            pending="compact-mobile"
-            position={slide.position}
-          />
-          {slide.caption && <figcaption class="hero__caption">{slide.caption}</figcaption>}
-        </figure>
-      ))
-    }
-  </div>
-  <div class="hero__shade" aria-hidden="true"></div>
+  <div class="container hero__grid">
+    <div class="hero__content">
+      <h1 class="hero__title">Sua próxima <em>história</em> começa aqui.</h1>
+      <p class="hero__lead">
+        Conheça lugares incríveis, faça novas amizades e viva experiências que vão muito além de uma viagem.
+      </p>
+      <div class="hero__actions">
+        <CTAButton href="#viagens" size="lg">Explorar viagens</CTAButton>
+      </div>
 
-  <div class="hero__content container">
-    <h1 class="hero__title">Sua próxima <em>história</em> começa aqui.</h1>
-    <p class="hero__lead">
-      Conheça lugares incríveis, faça novas amizades e viva experiências que vão muito além de uma viagem.
-    </p>
-    <div class="hero__actions">
-      <CTAButton href="#viagens" variant="outline-light" size="lg">Explorar viagens</CTAButton>
-    </div>
-
-    {
-      total > 1 && (
-        <div class="hero__controls" data-hero-controls hidden>
-          <div class="hero__dots" role="group" aria-label="Escolher foto">
-            {heroSlides.map((_, i) => (
-              <button
-                type="button"
-                class="hero__dot"
-                aria-label={`Mostrar foto ${i + 1} de ${total}`}
-                aria-current={i === 0 ? 'true' : undefined}
-                data-go={i}
-              >
-                <span class="hero__dot-bar">
-                  <span class="hero__dot-fill" />
-                </span>
-              </button>
-            ))}
+      {
+        total > 1 && (
+          <div class="hero__controls" data-hero-controls hidden>
+            <div class="hero__dots" role="group" aria-label="Escolher foto">
+              {heroSlides.map((_, i) => (
+                <button
+                  type="button"
+                  class="hero__dot"
+                  aria-label={`Mostrar foto ${i + 1} de ${total}`}
+                  aria-current={i === 0 ? 'true' : undefined}
+                  data-go={i}
+                >
+                  <span class="hero__dot-bar">
+                    <span class="hero__dot-fill" />
+                  </span>
+                </button>
+              ))}
+            </div>
+            <p class="hero__count" aria-hidden="true">
+              <span data-hero-current>01</span> / {pad(total)}
+            </p>
+            <button type="button" class="hero__pause" aria-pressed="false" data-hero-pause>
+              Pausar
+            </button>
           </div>
-          <p class="hero__count" aria-hidden="true">
-            <span data-hero-current>01</span> / {pad(total)}
-          </p>
-          <button type="button" class="hero__pause" aria-pressed="false" data-hero-pause>
-            Pausar
-          </button>
-        </div>
-      )
-    }
+        )
+      }
+    </div>
+    <div class="hero__frame">
+      <div class="hero__slides" aria-live="off">
+        {
+          heroSlides.map((slide, i) => (
+            <figure
+              class:list={['hero__slide', { 'is-active': i === 0, 'is-dormant': i > 0 }]}
+              data-slide={i}
+              role="group"
+              aria-roledescription="slide"
+              aria-label={`${i + 1} de ${total}`}
+              aria-hidden={i === 0 ? 'false' : 'true'}
+            >
+              <Photo
+                name={slide.photo}
+                alt={slide.alt}
+                priority={i === 0}
+                sizes="(min-width: 64rem) 46vw, 92vw"
+                widths={[480, 720, 960, 1350]}
+                tone={tones[i % tones.length]}
+                pending="compact-mobile"
+                position={slide.position}
+              />
+              {slide.caption && <figcaption class="hero__caption">{slide.caption}</figcaption>}
+            </figure>
+          ))
+        }
+      </div>
+    </div>
   </div>
 </section>
 
@@ -203,19 +206,80 @@ const tones = ['ink', 'lagoon', 'clay'] as const;
   .hero {
     position: relative;
     isolation: isolate;
-    display: grid;
-    min-height: max(34rem, min(calc(100svh - var(--header-h)), 52rem));
     overflow: hidden;
+    padding-block: clamp(2.5rem, 1.5rem + 4vw, 5.5rem);
     background: var(--c-ink);
     color: var(--c-paper);
     touch-action: pan-y;
   }
 
-  /* ---------- Fotos ---------- */
+  .hero__grid {
+    display: grid;
+    gap: clamp(2rem, 1.5rem + 2vw, 3.5rem);
+    align-items: center;
+  }
+
+  @media (min-width: 64rem) {
+    .hero__grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    }
+  }
+
+  /* ---------- Texto ---------- */
+  .hero__content {
+    display: grid;
+    justify-items: start;
+    gap: 1.25rem;
+  }
+
+  .hero__title {
+    max-width: 12ch;
+    font-size: clamp(2.75rem, 1.4rem + 4.2vw, 5.5rem);
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+  }
+
+  .hero__title em {
+    font-style: normal;
+    color: var(--c-sun);
+  }
+
+  .hero__lead {
+    max-width: 34rem;
+    font-size: var(--fs-lg);
+    line-height: 1.55;
+    color: rgb(246 241 231 / 0.88);
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  /* ---------- Foto ---------- */
+  .hero__frame {
+    position: relative;
+    width: 100%;
+    max-width: 42rem;
+    justify-self: center;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 30px 60px -30px rgb(0 0 0 / 0.6);
+  }
+
+  @media (min-width: 64rem) {
+    .hero__frame {
+      justify-self: end;
+    }
+  }
+
   .hero__slides {
     position: absolute;
     inset: 0;
-    z-index: -2;
   }
 
   .hero__slide {
@@ -226,7 +290,7 @@ const tones = ['ink', 'lagoon', 'clay'] as const;
     overflow: hidden;
     transition: opacity 1.2s var(--ease-out);
     --pending-top: 1rem;
-    --pending-right: var(--gutter);
+    --pending-right: 1rem;
   }
 
   .hero__slide.is-active {
@@ -237,17 +301,6 @@ const tones = ['ink', 'lagoon', 'clay'] as const;
     display: none;
   }
 
-  @media (prefers-reduced-motion: no-preference) {
-    .hero__slide :global(.photo) {
-      transform: scale(1.06);
-      transition: transform 7s linear;
-    }
-
-    .hero__slide.is-active :global(.photo) {
-      transform: scale(1);
-    }
-  }
-
   @media (prefers-reduced-motion: reduce) {
     .hero__slide {
       transition: none;
@@ -256,78 +309,32 @@ const tones = ['ink', 'lagoon', 'clay'] as const;
 
   .hero__caption {
     position: absolute;
-    right: var(--gutter);
-    bottom: 1.6rem;
+    right: 1rem;
+    bottom: 1rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: var(--radius-pill);
+    background: rgb(15 31 26 / 0.6);
     font-size: var(--fs-xs);
     font-weight: 700;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: rgb(246 241 231 / 0.85);
-  }
-
-  /* Escurecimento discreto para garantir a leitura do texto sobre qualquer foto. */
-  .hero__shade {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background:
-      linear-gradient(to top, rgb(15 31 26 / 0.7) 0%, rgb(15 31 26 / 0.25) 40%, rgb(15 31 26 / 0) 62%),
-      linear-gradient(to right, rgb(15 31 26 / 0.35) 0%, rgb(15 31 26 / 0) 55%);
-  }
-
-  /* ---------- Texto ---------- */
-  .hero__content {
-    display: grid;
-    align-content: end;
-    justify-items: start;
-    gap: 1.1rem;
-    padding-top: 4rem;
-    padding-bottom: clamp(2.5rem, 1.5rem + 4vw, 5.5rem);
-  }
-
-  .hero__title {
-    max-width: 16ch;
-    font-size: clamp(2.5rem, 1.4rem + 3.6vw, 4.75rem);
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: -0.035em;
-    text-shadow: 0 2px 24px rgb(15 31 26 / 0.35);
-  }
-
-  .hero__title em {
-    font-style: normal;
-    color: var(--c-sun);
-  }
-
-  .hero__lead {
-    max-width: 36rem;
-    font-size: var(--fs-lg);
-    line-height: 1.5;
     color: var(--c-paper);
-    text-shadow: 0 1px 12px rgb(15 31 26 / 0.4);
   }
 
-  .hero__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 0.5rem;
-  }
-
-  /* ---------- Controles ---------- */
+  /* ---------- Controles (só com 2 ou mais fotos) ---------- */
   .hero__controls {
     display: flex;
     align-items: center;
     gap: 1rem;
     width: 100%;
-    margin-top: clamp(1.5rem, 1rem + 2vw, 3rem);
+    max-width: 30rem;
+    margin-top: 1rem;
   }
 
   .hero__dots {
     display: flex;
     flex: 1;
     gap: 0.4rem;
-    max-width: 20rem;
   }
 
   .hero__dot {
@@ -375,10 +382,6 @@ const tones = ['ink', 'lagoon', 'clay'] as const;
     }
   }
 
-  .hero__dot:hover .hero__dot-bar {
-    background: rgb(246 241 231 / 0.6);
-  }
-
   .hero__count {
     font-size: var(--fs-xs);
     font-weight: 700;
@@ -389,7 +392,6 @@ const tones = ['ink', 'lagoon', 'clay'] as const;
 
   .hero__pause {
     min-height: 2.75rem;
-    margin-left: auto;
     padding: 0 0.25rem;
     border: 0;
     background: transparent;
@@ -402,9 +404,4 @@ const tones = ['ink', 'lagoon', 'clay'] as const;
     text-decoration-color: rgb(246 241 231 / 0.4);
     text-underline-offset: 0.3em;
   }
-
-  .hero__pause:hover {
-    text-decoration-color: currentColor;
-  }
-
 </style>

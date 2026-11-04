@@ -9,7 +9,7 @@ import Icon from '@/components/ui/Icon.astro';
 import CTAButton from '@/components/ui/CTAButton.astro';
 import { mainNav } from '@/data/navigation';
 import { site } from '@/config/site';
-import { tripsPage, whatsappLink, withBase } from '@/lib/links';
+import { loginPage, tripsPage, whatsappLink, withBase } from '@/lib/links';
 
 const allTrips = tripsPage();
 const home = withBase('/');
@@ -34,6 +34,7 @@ const home = withBase('/');
     </nav>
 
     <div class="site-header__actions">
+      <a href={loginPage()} class="site-header__login">Entrar</a>
       <CTAButton href={allTrips} class="site-header__cta">Encontrar viagens</CTAButton>
       <button
         type="button"
@@ -81,6 +82,7 @@ const home = withBase('/');
     <CTAButton href={whatsappLink()} variant="outline-light" size="lg" block external>
       Falar no WhatsApp
     </CTAButton>
+    <a class="mmenu__social" href={loginPage()} data-menu-link>Área do viajante</a>
     <a class="mmenu__social" href={site.instagram.url} target="_blank" rel="noopener noreferrer">
       Instagram @{site.instagram.handle}
       <span class="visually-hidden"> (abre em nova aba)</span>
@@ -225,6 +227,25 @@ const home = withBase('/');
     display: flex;
     align-items: center;
     gap: 0.5rem;
+  }
+
+  .site-header__login {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0 0.75rem;
+    font-weight: 800;
+    font-size: 0.875rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+
+  .site-header__login:hover {
+    text-decoration: underline;
+    text-decoration-color: var(--c-sun);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.35em;
   }
 
   .site-header__actions :global(.site-header__cta) {

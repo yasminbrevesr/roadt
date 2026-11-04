@@ -318,7 +318,7 @@ function collectErrors(page) {
 }
 
 /** Páginas internas (viagens, destinos, quem somos) em celular e desktop. */
-const SUBPAGES = ['viagens/', 'viagens/bahia/', 'viagens/jalapao/', 'sobre/'];
+const SUBPAGES = ['viagens/', 'viagens/bahia/', 'viagens/jalapao/', 'sobre/', 'entrar/'];
 
 async function checkSubpages(browser, axeSource) {
   const external = new Set();

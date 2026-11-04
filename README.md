@@ -9,6 +9,7 @@ Site editorial, mobile-first, rápido e acessível, com navegação interna comp
 | Todas as viagens (calendário + destinos, com filtros) | `/viagens/` (filtros pelo endereço: `?filtro=brasil`, `internacional`, `2027`) |
 | Página de cada destino (descrição, itens incluídos, datas e reserva) | `/viagens/<destino>/` (ex.: `/viagens/jalapao/`) |
 | Quem somos | `/sobre/` |
+| Área do viajante (login — visual pronto, acesso "em breve") | `/entrar/` |
 
 > **Pagamento continua na loja Nuvemshop.** O único passo que sai do site é o botão
 > **Reservar** de cada data (página de pagamento daquela saída na loja) e o link dos
@@ -134,6 +135,9 @@ onde faltava informação verificada, o site deixa o espaço preparado.
 - [ ] **Descrições dos destinos sem texto**: Jalapão, Chapada Diamantina e Ibitipoca ainda não
       têm descrição verificada (`description`/`includes` em `src/data/destinations.ts`). Enquanto
       isso, a página mostra os dados da viagem e convida a pedir o roteiro pelo WhatsApp.
+- [ ] **Login da área do viajante** (`/entrar/`): a tela está pronta, mas o formulário fica
+      desativado até definirmos o sistema de contas (sugestão: Supabase Auth). Hoje a página
+      direciona o viajante para o WhatsApp oficial.
 - [ ] **Termos de Uso**: hoje abrem a página oficial na loja. Se quiser uma página interna,
       envie o texto completo vigente.
 - [ ] **Imagem de compartilhamento** (1200×630) em `public/og-image.jpg` e informar em `site.seo.ogImage`.

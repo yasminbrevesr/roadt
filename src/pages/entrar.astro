@@ -1,0 +1,249 @@
+---
+/**
+ * Área do viajante: tela de login.
+ *
+ * PENDENTE: ainda não há sistema de contas. O formulário fica desativado, com aviso
+ * "em breve", até a definição do sistema de login (ex.: Supabase Auth). Enquanto isso,
+ * a página oferece o caminho que funciona hoje: acompanhar a reserva pelo WhatsApp oficial.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Breadcrumbs from '@/components/layout/Breadcrumbs.astro';
+import CTAButton from '@/components/ui/CTAButton.astro';
+import Photo from '@/components/ui/Photo.astro';
+import Logo from '@/components/ui/Logo.astro';
+import { site } from '@/config/site';
+import { whatsappLink, withBase } from '@/lib/links';
+---
+
+<BaseLayout title="Entrar · Área do viajante · RoadTrip021" description="Área do viajante da RoadTrip021." noindex>
+  <section class="login">
+    <div class="container login__grid">
+      <div class="login__side on-dark">
+        <div class="login__photo">
+          <Photo
+            name="hero-1"
+            alt="Grupo da RoadTrip021 com a bandeira da marca em frente a um gêiser"
+            sizes="(min-width: 64rem) 520px, 92vw"
+            widths={[480, 720, 960]}
+            position="center 42%"
+          />
+        </div>
+        <div class="login__side-text">
+          <p class="login__eyebrow">Área do viajante</p>
+          <p class="login__quote">Suas viagens e reservas, em um só lugar.</p>
+        </div>
+      </div>
+
+      <div class="login__panel">
+        <Breadcrumbs items={[{ label: 'Início', href: withBase('/') }, { label: 'Entrar' }]} />
+        <div class="login__logo"><Logo height={96} /></div>
+        <h1 class="login__title">Entrar na sua conta</h1>
+        <p class="login__lead">Acompanhe suas viagens e reservas com a RoadTrip021.</p>
+
+        <div class="login__notice" role="status">
+          <strong>Em breve</strong>
+          <p>
+            A área do viajante está sendo preparada. Por enquanto, para acompanhar sua reserva, fale com a gente pelo
+            WhatsApp oficial.
+          </p>
+          <CTAButton
+            href={whatsappLink('Olá! Quero acompanhar a minha reserva com a RoadTrip021.')}
+            variant="dark"
+            block
+            external
+          >
+            Acompanhar pelo WhatsApp
+          </CTAButton>
+        </div>
+
+        <form class="login__form" aria-describedby="login-disabled" onsubmit="return false">
+          <fieldset disabled>
+            <legend class="visually-hidden">Dados de acesso</legend>
+            <label class="field">
+              <span class="field__label">E-mail</span>
+              <input type="email" name="email" autocomplete="email" placeholder="voce@email.com" />
+            </label>
+            <label class="field">
+              <span class="field__label">Senha</span>
+              <input type="password" name="senha" autocomplete="current-password" placeholder="Sua senha" />
+            </label>
+            <button type="submit" class="login__submit">Entrar (em breve)</button>
+          </fieldset>
+          <p id="login-disabled" class="login__hint">O acesso com e-mail e senha será liberado em breve.</p>
+        </form>
+
+        <p class="login__help">
+          Dúvidas? Atendimento oficial pelo WhatsApp <strong>{site.whatsapp.display}</strong>.
+        </p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .login {
+    padding-block: clamp(2rem, 1.5rem + 3vw, 4.5rem);
+  }
+
+  .login__grid {
+    display: grid;
+    gap: 2rem;
+    align-items: stretch;
+  }
+
+  @media (min-width: 64rem) {
+    .login__grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 3rem;
+    }
+  }
+
+  /* ---------- Lado da foto (desktop) ---------- */
+  .login__side {
+    display: none;
+  }
+
+  @media (min-width: 64rem) {
+    .login__side {
+      position: relative;
+      display: grid;
+      overflow: hidden;
+      border-radius: var(--radius-lg);
+      background: var(--c-ink);
+      color: var(--c-paper);
+      min-height: 36rem;
+    }
+  }
+
+  .login__photo {
+    position: absolute;
+    inset: 0;
+  }
+
+  .login__side::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgb(15 31 26 / 0.85) 0%, rgb(15 31 26 / 0) 55%);
+  }
+
+  .login__side-text {
+    position: relative;
+    z-index: 1;
+    align-self: end;
+    padding: 2rem;
+  }
+
+  .login__eyebrow {
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--c-gold);
+  }
+
+  .login__quote {
+    margin-top: 0.5rem;
+    max-width: 18ch;
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 1.5rem + 1.5vw, 2.75rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+
+  /* ---------- Formulário ---------- */
+  .login__panel {
+    display: grid;
+    align-content: start;
+    gap: 1rem;
+    max-width: 30rem;
+    width: 100%;
+    justify-self: center;
+  }
+
+  .login__logo :global(.logo-img) {
+    height: 88px;
+    width: auto;
+  }
+
+  .login__title {
+    font-size: clamp(2rem, 1.6rem + 1.6vw, 2.75rem);
+  }
+
+  .login__lead {
+    color: var(--c-muted);
+  }
+
+  .login__notice {
+    display: grid;
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+    padding: 1.25rem;
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius);
+    background: #fffdf8;
+    font-size: var(--fs-sm);
+  }
+
+  .login__notice strong {
+    font-size: var(--fs-xs);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--c-sun-deep);
+  }
+
+  .login__form fieldset {
+    display: grid;
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .field {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .field__label {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+  }
+
+  .field input {
+    min-height: 3rem;
+    padding: 0.75rem 1rem;
+    border: 1.5px solid var(--c-line);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    font-size: 1rem;
+  }
+
+  .field input:disabled {
+    background: var(--c-sand);
+    cursor: not-allowed;
+  }
+
+  .login__submit {
+    min-height: 3rem;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--c-sand-2);
+    color: var(--c-muted);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: not-allowed;
+  }
+
+  .login__hint,
+  .login__help {
+    font-size: var(--fs-sm);
+    color: var(--c-muted);
+  }
+
+  .login__hint {
+    margin-top: 0.5rem;
+  }
+</style>

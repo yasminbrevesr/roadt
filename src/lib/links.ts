@@ -30,6 +30,11 @@ export function destinationPage(slug: string, departureId?: string): string {
   return withBase(`/viagens/${slug}/${departureId ? `#saida-${departureId}` : ''}`);
 }
 
+/** Área do viajante (login). */
+export function loginPage(): string {
+  return withBase('/entrar/');
+}
+
 /** Página "Quem somos". */
 export function aboutPage(): string {
   return withBase('/sobre/');
