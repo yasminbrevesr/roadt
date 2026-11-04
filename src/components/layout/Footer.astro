@@ -24,7 +24,7 @@ const hasLegal = Boolean(companyName || cnpj || address);
     <div class="sf-grid">
       <div class="sf-brand">
         <a href={withBase('/')} class="sf-brand__logo" aria-label={`${site.name} — página inicial`}>
-          <Logo />
+          <Logo height={110} />
         </a>
         <p class="sf-brand__text">{site.mission}</p>
         <p class="sf-brand__meta">{site.homeBase} · desde {site.since.year}</p>
@@ -186,6 +186,11 @@ const hasLegal = Boolean(companyName || cnpj || address);
     justify-self: start;
     align-items: center;
     min-height: 3rem;
+  }
+
+  .sf-brand__logo :global(.logo-img) {
+    height: 110px;
+    width: auto;
   }
 
   .sf-brand__logo :global(.logo) {

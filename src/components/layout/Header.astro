@@ -170,6 +170,17 @@ const home = withBase('/');
     text-decoration: none;
   }
 
+  .site-header__brand :global(.logo-img) {
+    height: 52px;
+    width: auto;
+  }
+
+  @media (min-width: 64rem) {
+    .site-header__brand :global(.logo-img) {
+      height: 62px;
+    }
+  }
+
   .site-header__nav {
     display: none;
   }

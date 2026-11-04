@@ -1,10 +1,9 @@
 ---
 /**
- * Logo da RoadTrip021.
- *
- * PENDENTE: o arquivo oficial do logo não está no repositório. Salve-o em
- * src/assets/brand/logo.svg (ou .png/.webp) e ele substitui automaticamente
- * o logotipo tipográfico provisório abaixo.
+ * Logo da RoadTrip021 (arquivo oficial em src/assets/brand/logo.png).
+ * Para trocar, substitua o arquivo (aceita .svg, .png ou .webp com o nome "logo").
+ * Sem arquivo, mostra um logotipo tipográfico provisório.
+ * A altura exibida é definida por CSS em cada lugar (cabeçalho, menu, rodapé).
  */
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
@@ -12,11 +11,11 @@ import { site } from '@/config/site';
 
 interface Props {
   class?: string;
-  /** Altura do logo em pixels quando houver arquivo oficial. */
+  /** Altura (px) usada para gerar a imagem; versão 2x para telas de alta densidade. */
   height?: number;
 }
 
-const { class: className, height = 36 } = Astro.props;
+const { class: className, height = 64 } = Astro.props;
 
 const files = import.meta.glob<{ default: ImageMetadata }>('/src/assets/brand/logo.{svg,png,webp}', { eager: true });
 const logo = Object.values(files)[0]?.default;
@@ -24,7 +23,14 @@ const logo = Object.values(files)[0]?.default;
 
 {
   logo ? (
-    <Image src={logo} alt={site.name} height={height} class:list={['logo-img', className]} loading="eager" />
+    <Image
+      src={logo}
+      alt={site.name}
+      height={height}
+      densities={[1, 2]}
+      class:list={['logo-img', className]}
+      loading="eager"
+    />
   ) : (
     <span class:list={['logo', className]} data-logo-pending>
       <span class="logo__word">RoadTrip</span>
